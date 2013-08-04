@@ -23,7 +23,7 @@
 #include "uv.h"
 #include "utils.h"
 
-void luv_push_stats_table(lua_State* L, struct stat* s);
+void luv_push_stats_table(lua_State* L, uv_stat_t* s);
 
 void luv_fs_error(lua_State* L, int errorno, const char *syscall, const char *msg, const char *path);
 

@@ -152,9 +152,19 @@ int luvit_init_ssl()
 }
 #endif
 
+#ifdef LUVIT_STANDALONE
 int luvit_init(lua_State *L, uv_loop_t* loop, int argc, char *argv[])
+#else
+int luvit_init(lua_State *L, uv_loop_t* loop)
+#endif
 {
+#ifdef LUVIT_STANDALONE
   int index, rc;
+#else
+  int rc;
+#endif
+
+#ifdef HAVE_ARES
   ares_channel channel;
   struct ares_options options;
 
@@ -162,6 +172,7 @@ int luvit_init(lua_State *L, uv_loop_t* loop, int argc, char *argv[])
 
   rc = ares_library_init(ARES_LIB_INIT_ALL);
   assert(rc == ARES_SUCCESS);
+#endif
 
   /* Pull up the preload table */
   lua_getglobal(L, "package");
@@ -176,18 +187,26 @@ int luvit_init(lua_State *L, uv_loop_t* loop, int argc, char *argv[])
   lua_pushcfunction(L, luaopen_crypto);
   lua_setfield(L, -2, "_crypto");
 #endif
+
+#ifdef HAVE_YAJL
   /* Register yajl */
   lua_pushcfunction(L, luaopen_yajl);
   lua_setfield(L, -2, "yajl");
+#endif
+
   /* Register debug */
   lua_pushcfunction(L, luaopen_debugger);
   lua_setfield(L, -2, "_debug");
   /* Register os */
   lua_pushcfunction(L, luaopen_os_binding);
   lua_setfield(L, -2, "os_binding");
+
+#ifdef HAVE_HTTP_PARSER
   /* Register http_parser */
   lua_pushcfunction(L, luaopen_http_parser);
   lua_setfield(L, -2, "http_parser");
+#endif
+
   /* Register uv */
   lua_pushcfunction(L, luaopen_uv_native);
   lua_setfield(L, -2, "uv_native");
@@ -204,6 +223,7 @@ int luvit_init(lua_State *L, uv_loop_t* loop, int argc, char *argv[])
   /* We're done with preload, put it away */
   lua_pop(L, 1);
 
+#ifdef LUVIT_STANDALONE
   /* Get argv */
   lua_createtable (L, argc, 0);
   for (index = 0; index < argc; index++) {
@@ -211,6 +231,7 @@ int luvit_init(lua_State *L, uv_loop_t* loop, int argc, char *argv[])
     lua_rawseti(L, -2, index);
   }
   lua_setglobal(L, "argv");
+#endif
 
   lua_pushcfunction(L, luvit_exit);
   lua_setglobal(L, "exitProcess");
@@ -221,23 +242,35 @@ int luvit_init(lua_State *L, uv_loop_t* loop, int argc, char *argv[])
   lua_pushcfunction(L, luvit_getcwd);
   lua_setglobal(L, "getcwd");
 
+#ifdef LUVIT_VERSION
   lua_pushstring(L, LUVIT_VERSION);
   lua_setglobal(L, "VERSION");
+#endif
 
+#ifdef UV_VERSION
   lua_pushstring(L, UV_VERSION);
   lua_setglobal(L, "UV_VERSION");
+#endif
 
+#ifdef LUAJIT_VERSION
   lua_pushstring(L, LUAJIT_VERSION);
   lua_setglobal(L, "LUAJIT_VERSION");
+#endif
 
+#ifdef HTTP_VERISON
   lua_pushstring(L, HTTP_VERSION);
   lua_setglobal(L, "HTTP_VERSION");
+#endif
 
+#ifdef YAJL_VERSIONH
   lua_pushstring(L, YAJL_VERSIONISH);
   lua_setglobal(L, "YAJL_VERSION");
+#endif
 
+#ifdef ZLIB_VERSION
   lua_pushstring(L, ZLIB_VERSION);
   lua_setglobal(L, "ZLIB_VERSION");
+#endif
 
 #ifdef USE_OPENSSL
   lua_pushstring(L, OPENSSL_VERSION_TEXT);
@@ -252,9 +285,11 @@ int luvit_init(lua_State *L, uv_loop_t* loop, int argc, char *argv[])
   /* Store the loop within the registry */
   luv_set_loop(L, loop);
 
+#ifdef HAVE_ARES
   /* Store the ARES Channel */
   uv_ares_init_options(luv_get_loop(L), &channel, &options, 0);
   luv_set_ares_channel(L, channel);
+#endif
 
   return 0;
 }

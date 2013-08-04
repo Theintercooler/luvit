@@ -21,10 +21,15 @@
 #include "lua.h"
 #include "lauxlib.h"
 #include "uv.h"
+
+#ifdef HAVE_ARES
 #include "ares.h"
+#endif
+
 #include "utils.h"
 
 /* Wrapped functions exposed to lua */
+#ifdef HAVE_ARES
 int luv_dns_queryA(lua_State* L);
 int luv_dns_queryAaaa(lua_State* L);
 int luv_dns_queryCname(lua_State* L);
@@ -33,6 +38,8 @@ int luv_dns_queryNs(lua_State* L);
 int luv_dns_queryTxt(lua_State* L);
 int luv_dns_querySrv(lua_State* L);
 int luv_dns_getHostByAddr(lua_State* L);
+#endif
+
 int luv_dns_getAddrInfo(lua_State* L);
 
 int luv_dns_isIp(lua_State* L);

@@ -184,7 +184,7 @@ const char *luv_signo_string(int signo) {
   return "";
 }
 
-
+#ifdef HAVE_LIBEV
 static void luv_on_signal(struct ev_loop *loop, struct ev_signal *w, int revents) {
   assert(uv_default_loop()->ev == loop);
   lua_State* L = (lua_State*)w->data;
@@ -196,9 +196,11 @@ static void luv_on_signal(struct ev_loop *loop, struct ev_signal *w, int revents
   lua_pushinteger(L, revents);
   lua_call(L, 3, 0);
 }
+#endif
 
 #endif
 
+#ifdef HAVE_LIBEV
 int luv_activate_signal_handler(lua_State* L) {
 #ifndef _WIN32
   int signal = luaL_checkint(L, 1);
@@ -210,6 +212,7 @@ int luv_activate_signal_handler(lua_State* L) {
 #endif
   return 0;
 }
+#endif
 
 
 int luv_run(lua_State* L) {
@@ -358,21 +361,27 @@ int luv_execpath(lua_State* L) {
 }
 
 int luv_get_process_title(lua_State* L) {
+#ifdef HAVE_PROC_INFO
   char title[8192];
   uv_err_t err = uv_get_process_title(title, 8192);
   if (err.code) {
     return luaL_error(L, "uv_get_process_title: %s: %s", uv_err_name(err), uv_strerror(err));
   }
   lua_pushstring(L, title);
+#else
+  lua_pushnil(L);
+#endif
   return 1;
 }
 
 int luv_set_process_title(lua_State* L) {
   const char* title = luaL_checkstring(L, 1);
+  #ifdef HAVE_PROC_INFO
   uv_err_t err = uv_set_process_title(title);
   if (err.code) {
     return luaL_error(L, "uv_set_process_title: %s: %s", uv_err_name(err), uv_strerror(err));
   }
+#endif
   return 0;
 }
 

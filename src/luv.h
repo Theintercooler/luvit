@@ -21,11 +21,11 @@
 #include "lua.h"
 #include "lauxlib.h"
 #include "luv_debug.h"
+#include "luvit_init.h"
 #include "utils.h"
 
 LUALIB_API int luaopen_uv_native (lua_State *L);
 
-int luvit_init(lua_State *L, uv_loop_t* loop, int argc, char *argv[]);
 int luvit_run(lua_State *L);
 
 #endif

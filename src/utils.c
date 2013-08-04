@@ -197,10 +197,10 @@ luv_handle_t* luv_handle_create(lua_State* L, size_t size, const char* type) {
   lhandle->handle->data = lhandle; /* Point back to lhandle from handle */
   lhandle->refCount = 0;
   lhandle->L = L;
- 
+
   /* if handle create in a coroutine, we need hold the coroutine */
   mainthread = luv_get_main_thread(L);
-  if (L != mainthread) { 
+  if (L != mainthread) {
     lua_pushthread(L);
     lhandle->threadref = luaL_ref(L, LUA_REGISTRYINDEX);
   } else {
@@ -271,7 +271,7 @@ lua_State* luv_handle_get_lua(luv_handle_t* lhandle) {
   return lhandle->L;
 }
 
-
+#ifdef HAVE_ARES
 void luv_set_ares_channel(lua_State *L, ares_channel channel) {
   lua_pushlightuserdata(L, channel);
   lua_setfield(L, LUA_REGISTRYINDEX, "ares_channel");
@@ -284,6 +284,7 @@ ares_channel luv_get_ares_channel(lua_State *L) {
   lua_pop(L, 1);
   return channel;
 }
+#endif
 
 lua_State* luv_get_main_thread(lua_State *L) {
   lua_State *main_thread;

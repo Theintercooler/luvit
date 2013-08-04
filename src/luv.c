@@ -19,7 +19,10 @@
 #include "uv.h"
 #include <stdlib.h>
 #include <string.h>
+
+#ifdef HAVE_EV
 #include "uv-private/ev.h"
+#endif
 
 #include "luv_fs.h"
 #include "luv_dns.h"
@@ -116,6 +119,7 @@ static const luaL_reg luv_f[] = {
   {"ttyGetWinsize", luv_tty_get_winsize},
 
   /* DNS functions */
+#ifdef HAVE_ARES
   {"dnsQueryA", luv_dns_queryA},
   {"dnsQueryAaaa", luv_dns_queryAaaa},
   {"dnsQueryCname", luv_dns_queryCname},
@@ -124,6 +128,7 @@ static const luaL_reg luv_f[] = {
   {"dnsQueryTxt", luv_dns_queryTxt},
   {"dnsQuerySrv", luv_dns_querySrv},
   {"dnsGetHostByAddr", luv_dns_getHostByAddr},
+#endif
   {"dnsGetAddrInfo", luv_dns_getAddrInfo},
   {"dnsIsIp", luv_dns_isIp},
   {"dnsIsIpV4", luv_dns_isIpV4},
@@ -201,10 +206,16 @@ LUALIB_API int luaopen_uv_native (lua_State* L) {
   lua_newtable (L);
 
   luaL_register(L, NULL, luv_f);
+
+  #ifdef UV_VERSION_MAJOR
   lua_pushnumber(L, UV_VERSION_MAJOR);
   lua_setfield(L, -2, "VERSION_MAJOR");
+  #endif
+
+  #ifdef UV_VERSION_MINOR
   lua_pushnumber(L, UV_VERSION_MINOR);
   lua_setfield(L, -2, "VERSION_MINOR");
+  #endif
 
   return 1;
 }

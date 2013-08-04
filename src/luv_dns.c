@@ -78,6 +78,7 @@ static void luv_aliases_to_array(lua_State *L, struct hostent *host)
   }
 }
 
+#ifdef HAVE_ARES
 /* From NodeJS */
 static const char* ares_errno_string(int errorno)
 {
@@ -115,6 +116,8 @@ static const char* ares_errno_string(int errorno)
   }
 }
 
+#endif
+
 static void luv_push_gai_async_error(lua_State *L, int status, const char* source)
 {
   char code_str[32];
@@ -124,6 +127,7 @@ static void luv_push_gai_async_error(lua_State *L, int status, const char* sourc
   luv_acall(L, 1, 0, "dns_after");
 }
 
+#ifdef HAVE_ARES
 /* Pushes an error object onto the stack */
 static void luv_push_ares_async_error(lua_State* L, int rc, const char* source)
 {
@@ -132,6 +136,7 @@ static void luv_push_ares_async_error(lua_State* L, int rc, const char* source)
   luv_push_async_error_raw(L, code_str, ares_errno_string(rc), source, NULL);
   luv_acall(L, 1, 0, "dns_after");
 }
+
 
 static void queryA_callback(void *arg, int status, int timeouts,
                             unsigned char* buf, int len)
@@ -486,7 +491,7 @@ int luv_dns_getHostByAddr(lua_State* L)
                      getHostByAddr_callback, ref);
   return 0;
 }
-
+#endif
 static void luv_dns_getaddrinfo_callback(uv_getaddrinfo_t* res, int status,
                                          struct addrinfo* start)
 {
@@ -547,9 +552,9 @@ static int luv_dns__isIp(lua_State *L, const char *ip, int v4v6) {
   int family;
   char address_buffer[sizeof(struct in6_addr)];
 
-  if (uv_inet_pton(AF_INET, ip, &address_buffer) == 1) {
+  if (uv_inet_pton(AF_INET, ip, &address_buffer).code == UV_OK) {
     family = AF_INET;
-  } else if (uv_inet_pton(AF_INET6, ip, &address_buffer) == 1) {
+  } else if (uv_inet_pton(AF_INET6, ip, &address_buffer).code == UV_OK) {
     family = AF_INET6;
   } else {
     /* failure */

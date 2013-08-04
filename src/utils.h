@@ -21,7 +21,10 @@
 #include "lua.h"
 #include "lauxlib.h"
 #include "uv.h"
+
+#ifdef HAVE_ARES
 #include "ares.h"
+#endif
 
 /* C doesn't have booleans on it's own */
 #ifndef FALSE
@@ -36,8 +39,11 @@ void luv_acall(lua_State *L, int nargs, int nresults, const char* source);
 void luv_set_loop(lua_State *L, uv_loop_t *loop);
 uv_loop_t* luv_get_loop(lua_State *L);
 
+#ifdef HAVE_ARES
 void luv_set_ares_channel(lua_State *L, ares_channel channel);
 ares_channel luv_get_ares_channel(lua_State *L);
+#endif
+
 lua_State* luv_get_main_thread(lua_State *L);
 
 
@@ -51,8 +57,8 @@ uv_handle_t* luv_checkudata(lua_State* L, int index, const char* type);
 
 const char* luv_handle_type_to_string(uv_handle_type type);
 
-/* luv handles are used as the userdata type that points to uv handles. 
- * The luv handle is considered strong when it's "active" or has non-zero 
+/* luv handles are used as the userdata type that points to uv handles.
+ * The luv handle is considered strong when it's "active" or has non-zero
  * reqCount.  When this happens ref will contain a luaL_ref to the userdata.
  */
 typedef struct {
@@ -60,17 +66,17 @@ typedef struct {
   int refCount;        /* a count of all pending request to know strength */
   lua_State* L;        /* L and ref together form a reference to the userdata */
   int threadref;       /* if handle is created in a coroutine(not main thread), threadref is
-                          the reference to the coroutine in the Lua registery. 
-                          we release the reference when handle closed. 
+                          the reference to the coroutine in the Lua registery.
+                          we release the reference when handle closed.
                           if handle is created in the main thread, threadref is LUA_NOREF.
-                          we must hold the coroutine, because in some cases(see issue #319) that the coroutine 
-                          referenced by nothing and would collected by gc, then uv's callback touch an 
+                          we must hold the coroutine, because in some cases(see issue #319) that the coroutine
+                          referenced by nothing and would collected by gc, then uv's callback touch an
                           invalid pointer. */
   int ref;             /* ref is null when refCount is 0 meaning we're weak */
   const char* type;
 } luv_handle_t;
 
-/* Create a new luv_handle.  Input is the lua state and the size of the desired 
+/* Create a new luv_handle.  Input is the lua state and the size of the desired
  * uv struct.  A new userdata is created and pushed onto the stack.  The luv
  * handle and the uv handle are interlinked.
  */
