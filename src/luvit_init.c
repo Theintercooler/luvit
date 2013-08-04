@@ -164,16 +164,6 @@ int luvit_init(lua_State *L, uv_loop_t* loop)
   int rc;
 #endif
 
-#ifdef HAVE_ARES
-  ares_channel channel;
-  struct ares_options options;
-
-  memset(&options, 0, sizeof(options));
-
-  rc = ares_library_init(ARES_LIB_INIT_ALL);
-  assert(rc == ARES_SUCCESS);
-#endif
-
   /* Pull up the preload table */
   lua_getglobal(L, "package");
   lua_getfield(L, -1, "preload");
@@ -188,11 +178,9 @@ int luvit_init(lua_State *L, uv_loop_t* loop)
   lua_setfield(L, -2, "_crypto");
 #endif
 
-#ifdef HAVE_YAJL
   /* Register yajl */
   lua_pushcfunction(L, luaopen_yajl);
   lua_setfield(L, -2, "yajl");
-#endif
 
   /* Register debug */
   lua_pushcfunction(L, luaopen_debugger);
@@ -201,11 +189,9 @@ int luvit_init(lua_State *L, uv_loop_t* loop)
   lua_pushcfunction(L, luaopen_os_binding);
   lua_setfield(L, -2, "os_binding");
 
-#ifdef HAVE_HTTP_PARSER
   /* Register http_parser */
   lua_pushcfunction(L, luaopen_http_parser);
   lua_setfield(L, -2, "http_parser");
-#endif
 
   /* Register uv */
   lua_pushcfunction(L, luaopen_uv_native);
@@ -245,12 +231,16 @@ int luvit_init(lua_State *L, uv_loop_t* loop)
 #ifdef LUVIT_VERSION
   lua_pushstring(L, LUVIT_VERSION);
   lua_setglobal(L, "VERSION");
+#else
+  lua_pushstring(L, "dev");
+  lua_setglobal(L, "VERSION");
 #endif
 
-#ifdef UV_VERSION
-  lua_pushstring(L, UV_VERSION);
+  lua_pushnumber(L, uv_version());
+  lua_setglobal(L, "UV_VERSION_NUMBER");
+
+  lua_pushstring(L, uv_version_string());
   lua_setglobal(L, "UV_VERSION");
-#endif
 
 #ifdef LUAJIT_VERSION
   lua_pushstring(L, LUAJIT_VERSION);
@@ -284,12 +274,6 @@ int luvit_init(lua_State *L, uv_loop_t* loop)
 
   /* Store the loop within the registry */
   luv_set_loop(L, loop);
-
-#ifdef HAVE_ARES
-  /* Store the ARES Channel */
-  uv_ares_init_options(luv_get_loop(L), &channel, &options, 0);
-  luv_set_ares_channel(L, channel);
-#endif
 
   return 0;
 }

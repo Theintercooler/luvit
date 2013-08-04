@@ -16,20 +16,20 @@ limitations under the License.
 
 --]]
 
-local net = require('net')
+local net = require('luvit.net')
 local HttpParser = require('http_parser')
 local table = require('table')
 local osDate = require('os').date
 local string = require('string')
 local stringFormat = require('string').format
-local Object = require('core').Object
-local Error = require('core').Error
-local url = require('url')
+local Object = require('luvit.core').Object
+local Error = require('luvit.core').Error
+local url = require('luvit.url')
 
 local END_OF_FILE = 0
 local CRLF = '\r\n'
 
-local iStream = require('core').iStream
+local iStream = require('luvit.core').iStream
 local http = {}
 
 local connectionExpression = 'connection'

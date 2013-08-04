@@ -18,9 +18,9 @@ limitations under the License.
 
 -- Ported from node's dgram.js.
 
-local dns = require('dns')
-local net = require('net')
-local Udp = require('uv').Udp
+local dns = require('luvit.dns')
+local net = require('luvit.net')
+local Udp = require('luvit.uv').Udp
 local Emitter = require('core').Emitter
 
 local dgram = {}

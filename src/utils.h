@@ -22,10 +22,6 @@
 #include "lauxlib.h"
 #include "uv.h"
 
-#ifdef HAVE_ARES
-#include "ares.h"
-#endif
-
 /* C doesn't have booleans on it's own */
 #ifndef FALSE
 #define FALSE 0
@@ -38,11 +34,6 @@ void luv_acall(lua_State *L, int nargs, int nresults, const char* source);
 
 void luv_set_loop(lua_State *L, uv_loop_t *loop);
 uv_loop_t* luv_get_loop(lua_State *L);
-
-#ifdef HAVE_ARES
-void luv_set_ares_channel(lua_State *L, ares_channel channel);
-ares_channel luv_get_ares_channel(lua_State *L);
-#endif
 
 lua_State* luv_get_main_thread(lua_State *L);
 

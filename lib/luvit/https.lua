@@ -16,9 +16,9 @@ limitations under the License.
 
 --]]
 local fmt = require('string').format
-local http = require('http')
-local tls = require('tls')
-local url = require('url')
+local http = require('luvit.http')
+local tls = require('luvit.tls')
+local url = require('luvit.url')
 
 function createConnection(...)
   local args = {...}

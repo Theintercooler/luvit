@@ -16,7 +16,7 @@ limitations under the License.
 
 --]]
 
-local Object = require('core').Object
+local Object = require('luvit.core').Object
 local os = require('os_binding')
 local table = require('table')
 

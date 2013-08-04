@@ -16,7 +16,7 @@ limitations under the License.
 
 --]]
 
-local url = require('url')
+local url = require('luvit.url')
 local stack = {}
 
 function stack.stack(...)

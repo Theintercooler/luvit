@@ -1,8 +1,10 @@
 project (luvit C)
 
 set(LUVIT_INCLUDE_DIRS
+    ${HTTP_PARSER_INCLUDE_DIRS}
 	${UV_INCLUDE_DIRS}
 	${LUAJIT_INCLUDE_DIRS}
+	${YAJL_INCLUDE_DIRS}
 	${CMAKE_CURRENT_SOURCE_DIR}/src
 	CACHE INTERNAL "Luvit include directories"
 )
@@ -13,7 +15,7 @@ include_directories(${LUVIT_INCLUDE_DIRS})
 add_library(${LUVIT_LIBRARY} STATIC
 	${CMAKE_CURRENT_SOURCE_DIR}/src/lconstants.c
 	${CMAKE_CURRENT_SOURCE_DIR}/src/lenv.c
-#	${CMAKE_CURRENT_SOURCE_DIR}/src/lhttp_parser.c
+	${CMAKE_CURRENT_SOURCE_DIR}/src/lhttp_parser.c
 	${CMAKE_CURRENT_SOURCE_DIR}/src/los.c
 	${CMAKE_CURRENT_SOURCE_DIR}/src/luv.c
 	${CMAKE_CURRENT_SOURCE_DIR}/src/luv_debug.c
@@ -35,13 +37,20 @@ add_library(${LUVIT_LIBRARY} STATIC
 	${CMAKE_CURRENT_SOURCE_DIR}/src/luv_tty.c
 	${CMAKE_CURRENT_SOURCE_DIR}/src/luv_udp.c
 	${CMAKE_CURRENT_SOURCE_DIR}/src/luv_zlib.c
-#	${CMAKE_CURRENT_SOURCE_DIR}/src/lyajl.c
+	${CMAKE_CURRENT_SOURCE_DIR}/src/lyajl.c
 	${CMAKE_CURRENT_SOURCE_DIR}/src/utils.c)
+
+target_link_libraries(${LUVIT_LIBRARY}
+    ${UV_LIBRARIES}
+    ${ZLIB_LIBRARIES}
+    ${HTTP_PARSER_LIBRARIES}
+    ${YAJL_LIBRARIES}
+)
+
+message(${YAJL_LIBRARIES})
 
 set(LUVIT_LIBRARIES
 	${LUVIT_LIBRARY}
-	${UV_LIBRARIES}
-	${ZLIB_LIBRARIES}
 	CACHE INTERNAL "Luvit libraries")
 
 install(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/lib/luvit

@@ -16,17 +16,17 @@ limitations under the License.
 
 --]]
 local tlsbinding = require('_tls')
-local Buffer = require('buffer').Buffer
-local Object = require('core').Object
-local Emitter = require('core').Emitter
-local iStream = require('core').iStream
-local Socket = require('net').Socket
-local timer = require('timer')
+local Buffer = require('luvit.buffer').Buffer
+local Object = require('luvit.core').Object
+local Emitter = require('luvit.core').Emitter
+local iStream = require('luvit.core').iStream
+local Socket = require('luvit.net').Socket
+local timer = require('luvit.timer')
 local table = require('table')
-local net = require('net')
-local bind = require('utils').bind
+local net = require('luvit.net')
+local bind = require('luvit.utils').bind
 
-local Error = require('core').Error
+local Error = require('luvit.core').Error
 
 local string = require('string')
 local fmt = string.format

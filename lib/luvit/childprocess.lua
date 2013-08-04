@@ -15,7 +15,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 
 --]]
-local Process = require('uv').Process
+local Process = require('luvit.uv').Process
 local table = require('table')
 
 local childProcess = {}

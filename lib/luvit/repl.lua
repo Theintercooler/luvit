@@ -17,7 +17,7 @@ limitations under the License.
 --]]
 
 local debug = require('debug')
-local utils = require('utils')
+local utils = require('luvit.utils')
 local table = require('table')
 local repl = {}
 local c = utils.color

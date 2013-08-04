@@ -1,8 +1,8 @@
 local native = require('uv_native')
-local Object = require('core').Object
-local Emitter = require('core').Emitter
-local iStream = require('core').iStream
-local fs = require('fs')
+local Object = require('luvit.core').Object
+local Emitter = require('luvit.core').Emitter
+local iStream = require('luvit.core').iStream
+local fs = require('luvit.fs')
 
 local uv = Object:extend()
 

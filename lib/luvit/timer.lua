@@ -16,7 +16,7 @@ limitations under the License.
 
 --]]
 
-local Timer = require('uv').Timer
+local Timer = require('luvit.uv').Timer
 local os = require('os')
 local table = require('table')
 

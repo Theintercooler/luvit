@@ -18,7 +18,7 @@ limitations under the License.
 
 local native = require('uv_native')
 local constants = require('constants')
-local Error = require('core').Error
+local Error = require('luvit.core').Error
 local string = require('string')
 
 local dns = {}

@@ -17,14 +17,15 @@ limitations under the License.
 --]]
 
 local native = require('uv_native')
-local dns = require('dns')
-local Tcp = require('uv').Tcp
-local Timer = require('uv').Timer
-local timer = require('timer')
-local utils = require('utils')
-local Emitter = require('core').Emitter
-local iStream = require('core').iStream
+local dns = require('luvit.dns')
+local Tcp = require('luvit.uv').Tcp
+local Timer = require('luvit.uv').Timer
+local timer = require('luvit.timer')
+local utils = require('luvit.utils')
+local Emitter = require('luvit.core').Emitter
+local iStream = require('luvit.core').iStream
 local table = require('table')
+local process = require "luvit.process"
 
 local net = {}
 
@@ -84,7 +85,7 @@ function Socket:write(data, callback)
   self.bytesWritten = self.bytesWritten + #data
 
   if self._connecting == true then
-    self._connectQueueSize = self._connectQueueSize + #data 
+    self._connectQueueSize = self._connectQueueSize + #data
     if self._connectQueue then
       table.insert(self._connectQueue, {data, callback})
     else

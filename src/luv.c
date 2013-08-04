@@ -20,10 +20,6 @@
 #include <stdlib.h>
 #include <string.h>
 
-#ifdef HAVE_EV
-#include "uv-private/ev.h"
-#endif
-
 #include "luv_fs.h"
 #include "luv_dns.h"
 #include "luv_handle.h"
@@ -83,7 +79,7 @@ static const luaL_reg luv_f[] = {
   {"setuid", luv_setuid},
   {"setgid", luv_setgid},
 #endif
-  
+
   /* Stream functions */
   {"shutdown", luv_shutdown},
   {"listen", luv_listen},
@@ -119,7 +115,6 @@ static const luaL_reg luv_f[] = {
   {"ttyGetWinsize", luv_tty_get_winsize},
 
   /* DNS functions */
-#ifdef HAVE_ARES
   {"dnsQueryA", luv_dns_queryA},
   {"dnsQueryAaaa", luv_dns_queryAaaa},
   {"dnsQueryCname", luv_dns_queryCname},
@@ -128,7 +123,6 @@ static const luaL_reg luv_f[] = {
   {"dnsQueryTxt", luv_dns_queryTxt},
   {"dnsQuerySrv", luv_dns_querySrv},
   {"dnsGetHostByAddr", luv_dns_getHostByAddr},
-#endif
   {"dnsGetAddrInfo", luv_dns_getAddrInfo},
   {"dnsIsIp", luv_dns_isIp},
   {"dnsIsIpV4", luv_dns_isIpV4},
@@ -207,15 +201,22 @@ LUALIB_API int luaopen_uv_native (lua_State* L) {
 
   luaL_register(L, NULL, luv_f);
 
-  #ifdef UV_VERSION_MAJOR
-  lua_pushnumber(L, UV_VERSION_MAJOR);
-  lua_setfield(L, -2, "VERSION_MAJOR");
-  #endif
+  int version = uv_version();
+  int majorVersion = version & 0xFF0000;
+  int minorVersion = version & 0x00FF00;
+  int patchVersion = version & 0x0000FF;
 
-  #ifdef UV_VERSION_MINOR
-  lua_pushnumber(L, UV_VERSION_MINOR);
+  lua_pushnumber(L, majorVersion);
+  lua_setfield(L, -2, "VERSION_MAJOR");
+
+  lua_pushnumber(L, minorVersion);
   lua_setfield(L, -2, "VERSION_MINOR");
-  #endif
+
+  lua_pushnumber(L, patchVersion);
+  lua_setfield(L, -2, "VERSION_PATCH");
+
+  lua_pushstring(L, uv_version_string());
+  lua_setfield(L, -2, "VERSION");
 
   return 1;
 }

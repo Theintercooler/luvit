@@ -18,8 +18,8 @@ limitations under the License.
 
 local native = require('uv_native')
 local table = require('table')
-local pathlib = require('path')
-local iStream = require('core').iStream
+local pathlib = require('luvit.path')
+local iStream = require('luvit.core').iStream
 local fs = {}
 
 local function passthrough(arg)

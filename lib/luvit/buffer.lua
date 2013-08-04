@@ -17,7 +17,7 @@ limitations under the License.
 --]]
 
 local table = require('table')
-local Object = require('core').Object
+local Object = require('luvit.core').Object
 local bit = require('bit')
 local ffi = require('ffi')
 ffi.cdef([[
