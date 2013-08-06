@@ -87,7 +87,7 @@ local function colorize_nop(color, obj)
 end
 
 function utils.dump(o, depth, no_colorize)
-  local _colorize_func
+  local colorize_func
   local _escapes
 
   if no_colorize then
@@ -232,6 +232,11 @@ function utils.bind(fn, self, ...)
     end
     return fn(self, unpack(arguments, 1, bindArgsLength + argsLength))
   end
+end
+
+function utils.warning(message, num)
+    num = num or 1
+    process.stderr:write(require "debug".traceback(tostring(message), num + 1).."\n")
 end
 
 return utils

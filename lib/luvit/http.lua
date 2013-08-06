@@ -293,7 +293,7 @@ function OutgoingMessage:_storeHeader(firstLine, headers)
   local messageHeader = firstLine
   local field, value
 
-  function store(field, value)
+  local function store(field, value)
     local matchField = field:lower()
     messageHeader = messageHeader .. field .. ': ' .. value .. CRLF
     if matchField == connectionExpression then
@@ -721,6 +721,8 @@ end
 
 function ClientRequest:onSocket(socket)
   local response = ServerResponse:new(self)
+  local current_field
+  local headers
   response.socket = socket
 
   self.socket = socket
