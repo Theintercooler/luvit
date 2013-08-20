@@ -47,8 +47,6 @@ target_link_libraries(${LUVIT_LIBRARY}
     ${YAJL_LIBRARIES}
 )
 
-message(${YAJL_LIBRARIES})
-
 set(LUVIT_LIBRARIES
 	${LUVIT_LIBRARY}
 	CACHE INTERNAL "Luvit libraries")
