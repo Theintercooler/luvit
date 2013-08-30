@@ -11,7 +11,15 @@ set(LUVIT_INCLUDE_DIRS
 
 set(LUVIT_LIBRARY luvit CACHE INTERNAL "Luvit library")
 
+IF(CMAKE_BUILD_TYPE STREQUAL "DEBUG")
+    message("-- Compiling luvit in debug mode")
+    add_definitions( -O3)
+ENDIF()
+
 include_directories(${LUVIT_INCLUDE_DIRS})
+
+tig_add_definitions_for(${LUVIT_LIBRARY})
+
 add_library(${LUVIT_LIBRARY} STATIC
 	${CMAKE_CURRENT_SOURCE_DIR}/src/lconstants.c
 	${CMAKE_CURRENT_SOURCE_DIR}/src/lenv.c
