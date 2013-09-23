@@ -17,6 +17,7 @@ limitations under the License.
 --]]
 
 local table = require('table')
+local process = require "luvit.process"
 
 --[[
 This module is for various classes and utilities that don't need their own
