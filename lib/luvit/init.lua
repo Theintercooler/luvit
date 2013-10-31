@@ -195,6 +195,11 @@ local traceback = require('debug').traceback
 -- This is called by all the event sources from C
 -- The user can override it to hook into event sources
 function eventSource(name, fn, ...)
+  if not fn then
+     p("ERROR: missing function to eventSource", name, fn, ...)
+     return
+  end
+    
   local args = {...}
   return assert(xpcall(function ()
     return fn(unpack(args))
