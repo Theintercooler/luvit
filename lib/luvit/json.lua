@@ -117,7 +117,7 @@ function JSON.stringify(value, options)
     end
   end
 
-  function add(o)
+  local function add(o)
     local t = type(o)
     if t == 'nil' or o == JSON.null then
       generator:null()
