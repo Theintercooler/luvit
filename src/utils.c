@@ -75,7 +75,7 @@ void luv_push_async_error_raw(lua_State* L, const char *code, const char *msg, c
 }
 
 /* Pushes an error object onto the stack */
-void luv_push_async_error(lua_State* L, uv_err_t err, const char* source, const char* path) {
+void luv_push_async_error(lua_State* L, int err, const char* source, const char* path) {
 
   const char* code = uv_err_name(err);
   const char* msg = uv_strerror(err);

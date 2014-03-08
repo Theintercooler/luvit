@@ -30,8 +30,8 @@ void luv_on_timer(uv_timer_t* handle, int status) {
   /* load the lua state and put the userdata on the stack */
   lua_State* L = luv_handle_get_lua(handle->data);
 
-  if (status == -1) {
-    luv_push_async_error(L, uv_last_error(luv_get_loop(L)), "on_timer", NULL);
+  if (status < 0) {
+    luv_push_async_error(L, status, "on_timer", NULL);
     luv_emit_event(L, "error", 1);
   } else {
     luv_emit_event(L, "timeout", 0);
@@ -47,8 +47,8 @@ int luv_timer_start(lua_State* L) {
 
   luv_register_event(L, 1, "timeout", 4);
 
-  if (uv_timer_start(handle, luv_on_timer, timeout, repeat)) {
-    uv_err_t err = uv_last_error(luv_get_loop(L));
+  int err = uv_timer_start(handle, luv_on_timer, timeout, repeat);
+  if (err < 0) {
     return luaL_error(L, "timer_start: %s", uv_strerror(err));
   }
   luv_handle_ref(L, handle->data, 1);
@@ -60,8 +60,8 @@ int luv_timer_start(lua_State* L) {
 int luv_timer_stop(lua_State* L) {
   uv_timer_t* handle = (uv_timer_t*)luv_checkudata(L, 1, "timer");
 
-  if (uv_timer_stop(handle)) {
-    uv_err_t err = uv_last_error(luv_get_loop(L));
+  int err = uv_timer_stop(handle);
+  if (err < 0) {
     return luaL_error(L, "timer_stop: %s", uv_strerror(err));
   }
   luv_handle_unref(L, handle->data);
@@ -72,8 +72,8 @@ int luv_timer_stop(lua_State* L) {
 int luv_timer_again(lua_State* L) {
   uv_timer_t* handle = (uv_timer_t*)luv_checkudata(L, 1, "timer");
 
-  if (uv_timer_again(handle)) {
-    uv_err_t err = uv_last_error(luv_get_loop(L));
+  int err = uv_timer_again(handle);
+  if (err < 0) {
     return luaL_error(L, "timer_again: %s", uv_strerror(err));
   }
 

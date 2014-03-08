@@ -23,43 +23,40 @@ void luv_on_connection(uv_stream_t* handle, int status) {
   /* load the lua state and the userdata */
   lua_State* L = luv_handle_get_lua(handle->data);
 
-  if (status == -1) {
-    luv_push_async_error(L, uv_last_error(luv_get_loop(L)), "on_connection", NULL);
+  if (status < 0) {
+    luv_push_async_error(L, status, "on_connection", NULL);
     luv_emit_event(L, "error", 1);
   } else {
     luv_emit_event(L, "connection", 0);
   }
 }
 
-void luv_on_read(uv_stream_t* handle, ssize_t nread, uv_buf_t buf) {
+void luv_on_read(uv_stream_t* handle, ssize_t nread, const uv_buf_t* buf) {
   /* load the lua state and the userdata */
   lua_State* L = luv_handle_get_lua(handle->data);
 
-  if (nread >= 0) {
+  if (nread == UV_EOF) {
+      luv_emit_event(L, "end", 0);
+  } else if (nread >= 0) {
 
-    lua_pushlstring (L, buf.base, nread);
+    lua_pushlstring (L, buf->base, nread);
     lua_pushinteger (L, nread);
     luv_emit_event(L, "data", 2);
 
   } else {
-    uv_err_t err = uv_last_error(luv_get_loop(L));
-    if (err.code == UV_EOF) {
-      luv_emit_event(L, "end", 0);
-    } else {
-      luv_push_async_error(L, uv_last_error(luv_get_loop(L)), "on_read", NULL);
-      luv_emit_event(L, "error", 1);
-    }
+    luv_push_async_error(L, nread, "on_read", NULL);
+    luv_emit_event(L, "error", 1);
   }
 
-  free(buf.base);
+  free(buf->base);
 }
 
 void luv_after_connect(uv_connect_t* req, int status) {
   /* load the lua state and the userdata */
   lua_State* L = luv_handle_get_lua(req->handle->data);
 
-  if (status == -1) {
-    luv_push_async_error(L, uv_last_error(luv_get_loop(L)), "after_connect", NULL);
+  if (status < 0) {
+    luv_push_async_error(L, status, "after_connect", NULL);
     luv_emit_event(L, "error", 1);
   } else {
     luv_emit_event(L, "connect", 0);
@@ -81,8 +78,8 @@ void luv_after_shutdown(uv_shutdown_t* req, int status) {
   luv_io_ctx_unref(L, cbs);
 
   if (lua_isfunction(L, -1)) {
-    if (status == -1) {
-      luv_push_async_error(L, uv_last_error(luv_get_loop(L)), "after_shutdown", NULL);
+    if (status < 0) {
+      luv_push_async_error(L, status, "after_shutdown", NULL);
       luv_acall(L, 1, 0, "after_shutdown");
     } else {
       luv_acall(L, 0, 0, "after_shutdown");
@@ -108,8 +105,8 @@ void luv_after_write(uv_write_t* req, int status) {
   luv_io_ctx_unref(L, cbs);
 
   if (lua_isfunction(L, -1)) {
-    if (status == -1) {
-      luv_push_async_error(L, uv_last_error(luv_get_loop(L)), "after_write", NULL);
+    if (status < 0) {
+      luv_push_async_error(L, status, "after_write", NULL);
       luv_acall(L, 1, 0, "after_write");
     } else {
       luv_acall(L, 0, 0, "after_write");
@@ -150,8 +147,8 @@ int luv_listen (lua_State* L) {
 
   luv_register_event(L, 1, "connection", 2);
 
-  if (uv_listen(handle, backlog_size, luv_on_connection)) {
-    uv_err_t err = uv_last_error(luv_get_loop(L));
+  int err = uv_listen(handle, backlog_size, luv_on_connection);
+  if (err < 0) {
     luaL_error(L, "listen: %s", uv_strerror(err));
   }
 
@@ -166,8 +163,9 @@ int luv_listen (lua_State* L) {
 int luv_accept (lua_State* L) {
   uv_stream_t* server = (uv_stream_t*)luv_checkudata(L, 1, "stream");
   uv_stream_t* client = (uv_stream_t*)luv_checkudata(L, 2, "stream");
-  if (uv_accept(server, client)) {
-    uv_err_t err = uv_last_error(luv_get_loop(L));
+  
+  int err = uv_accept(server, client);
+  if (err < 0) {
     luaL_error(L, "accept: %s", uv_strerror(err));
   }
 

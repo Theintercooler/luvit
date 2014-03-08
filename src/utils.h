@@ -38,7 +38,7 @@ uv_loop_t* luv_get_loop(lua_State *L);
 lua_State* luv_get_main_thread(lua_State *L);
 
 
-void luv_push_async_error(lua_State* L, uv_err_t err, const char* source, const char* path);
+void luv_push_async_error(lua_State* L, int err, const char* source, const char* path);
 void luv_push_async_error_raw(lua_State* L, const char *code, const char *msg, const char* source, const char* path);
 
 /* An alternative to luaL_checkudata that takes inheritance into account for polymorphism

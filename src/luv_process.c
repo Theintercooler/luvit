@@ -29,7 +29,7 @@
 #include "luv_portability.h"
 #include "utils.h"
 
-void luv_process_on_exit(uv_process_t* handle, int exit_status, int term_signal) {
+void luv_process_on_exit(uv_process_t *handle, int64_t exit_status, int term_signal) {
   /* load the lua state and the userdata */
   lua_State *L = luv_handle_get_lua(handle->data);
 
@@ -190,12 +190,11 @@ int luv_spawn(lua_State* L) {
   /* Create the userdata */
   handle = luv_create_process(L);
   luv_handle_ref(L, handle->data, -1);
-  r = uv_spawn(luv_get_loop(L), handle, options);
+  r = uv_spawn(luv_get_loop(L), handle, &options);
   free(args);
   if (env) free(env);
-  if (r) {
-    uv_err_t err = uv_last_error(luv_get_loop(L));
-    return luaL_error(L, "spawn: %s", uv_strerror(err));
+  if (r < 0) {
+    return luaL_error(L, "spawn: %s", uv_strerror(r));
   }
 
   /* Return the Pid */
@@ -215,8 +214,8 @@ int luv_process_kill(lua_State* L) {
   if (handle == NULL)
     return 0;
 
-  if (uv_process_kill(handle, signum)) {
-    uv_err_t err = uv_last_error(luv_get_loop(L));
+  int err = uv_process_kill(handle, signum);
+  if (err < 0) {
     return luaL_error(L, "process_kill: %s", uv_strerror(err));
   }
 
@@ -226,7 +225,7 @@ int luv_process_kill(lua_State* L) {
 /* (pid) Kills a pid with a specified signal. */
 int luv_kill(lua_State* L) {
   int pid, signum;
-  uv_err_t err;
+  int err;
 
   pid = luaL_checkint(L, 1);
 
@@ -237,7 +236,7 @@ int luv_kill(lua_State* L) {
   }
 
   err = uv_kill(pid, signum);
-  if (err.code != UV_OK) {
+  if (err < 0) {
     return luaL_error(L, "kill: %s", uv_strerror(err));
   }
 

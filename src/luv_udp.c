@@ -26,9 +26,8 @@
   int luv_udp_##name(lua_State *L) { \
     uv_udp_t* handle = (uv_udp_t*)luv_checkudata(L, 1, "udp"); \
     int flag = luaL_checkint(L, 2); \
-    int rc = fn(handle, flag); \
-    if (rc) { \
-      uv_err_t err = uv_last_error(luv_get_loop(L)); \
+    int err = fn(handle, flag); \
+    if (err < 0) { \
       return luaL_error(L, #name": %s", uv_strerror(err)); \
     } \
     return 0; \
@@ -47,8 +46,8 @@ typedef struct {
 
 static void luv_on_udp_recv(uv_udp_t* handle,
                             ssize_t nread,
-                            uv_buf_t buf,
-                            struct sockaddr* addr,
+                            const uv_buf_t* buf,
+                            const struct sockaddr* addr,
                             unsigned flags) {
   int port = 0;
   char ip[INET6_ADDRSTRLEN];
@@ -61,12 +60,12 @@ static void luv_on_udp_recv(uv_udp_t* handle,
   }
 
   if (nread < 0) {
-    luv_push_async_error(L, uv_last_error(luv_get_loop(L)), "on_recv", NULL);
+    luv_push_async_error(L, nread, "on_recv", NULL);
     luv_emit_event(L, "error", 1);
     return;
   }
 
-  lua_pushlstring(L, buf.base, nread);
+  lua_pushlstring(L, buf->base, nread);
   lua_newtable(L);
 
   if (addr->sa_family == AF_INET) {
@@ -87,8 +86,7 @@ static void luv_on_udp_recv(uv_udp_t* handle,
   lua_setfield(L, -2, "size");
   luv_emit_event(L, "message", 2);
 
-  free(buf.base);
-  buf.base = NULL;
+  free(buf->base);
 }
 
 static void luv_on_udp_send(uv_udp_send_t* req, int status) {
@@ -103,8 +101,8 @@ static void luv_on_udp_send(uv_udp_send_t* req, int status) {
   free(ref);
 
   if (lua_isfunction(L, -1)) {
-    if (status != 0) {
-      luv_push_async_error(L, uv_last_error(luv_get_loop(L)), "on_udp_send", NULL);
+    if (status < 0) {
+      luv_push_async_error(L, status, "on_udp_send", NULL);
       luv_acall(L, 1, 0, "on_udp_send");
     } else {
       luv_acall(L, 0, 0, "on_udp_send");
@@ -135,19 +133,26 @@ static int luv__udp_bind(lua_State *L, int family) {
 
   switch (family) {
   case AF_INET:
-    rc = uv_udp_bind(handle, uv_ip4_addr(host, port), flags);
+  {
+    struct sockaddr_in addr;
+    uv_ip4_addr(host, port, &addr);
+    rc = uv_udp_bind(handle, (struct sockaddr *)&addr, flags);
     break;
+  }
   case AF_INET6:
-    rc = uv_udp_bind6(handle, uv_ip6_addr(host, port), flags);
+  {
+    struct sockaddr_in6 addr;
+    uv_ip6_addr(host, port, &addr);
+    rc = uv_udp_bind(handle, (struct sockaddr *)&addr, flags | UV_UDP_IPV6ONLY);
     break;
+  }
   default:
     assert(0 && "unexpected family type");
     abort();
   }
 
-  if (rc) {
-    uv_err_t err = uv_last_error(luv_get_loop(L));
-    return luaL_error(L, "udp_bind: %s", uv_strerror(err));
+  if (rc < 0) {
+    return luaL_error(L, "udp_bind: %s", uv_strerror(rc));
   }
 
   return 0;
@@ -172,8 +177,8 @@ int luv_udp_set_membership(lua_State* L) {
   int option = luaL_checkoption (L, 4, "membership", luv_membership_options);
   uv_membership membership = option ? UV_LEAVE_GROUP : UV_JOIN_GROUP;
 
-  if (uv_udp_set_membership(handle, multicast_addr, interface_addr, membership)) {
-    uv_err_t err = uv_last_error(luv_get_loop(L));
+  int err = uv_udp_set_membership(handle, multicast_addr, interface_addr, membership);
+  if (err < 0) {
     return luaL_error(L, "udp_set_membership: %s", uv_strerror(err));
   }
 
@@ -189,8 +194,8 @@ int luv_udp_getsockname(lua_State* L) {
   struct sockaddr_storage address;
   int addrlen = sizeof(address);
 
-  if (uv_udp_getsockname(handle, (struct sockaddr*)(&address), &addrlen)) {
-    uv_err_t err = uv_last_error(luv_get_loop(L));
+  int err = uv_udp_getsockname(handle, (struct sockaddr*)(&address), &addrlen);
+  if (err < 0) {
     return luaL_error(L, "udp_getsockname: %s", uv_strerror(err));
   }
 
@@ -226,8 +231,6 @@ static int luv_udp__send(lua_State* L, int family) {
   uv_udp_send_t* req = (uv_udp_send_t*)malloc(sizeof(uv_udp_send_t));
   int port = luaL_checkint(L, 3);
   const char* host = luaL_checkstring(L, 4);
-  struct sockaddr_in dest;
-  struct sockaddr_in6 dest6;
   int rc;
 
   /* Store a reference to the callback */
@@ -245,21 +248,26 @@ static int luv_udp__send(lua_State* L, int family) {
 
   switch(family) {
   case AF_INET:
-    dest = uv_ip4_addr(host, port);
-    rc = uv_udp_send(req, handle, &buf, 1, dest, luv_on_udp_send);
+  {
+    struct sockaddr_in dest;
+    uv_ip4_addr(host, port, &dest);
+    rc = uv_udp_send(req, handle, &buf, 1, (struct sockaddr *)&dest, luv_on_udp_send);
     break;
+  }
   case AF_INET6:
-    dest6 = uv_ip6_addr(host, port);
-    rc = uv_udp_send6(req, handle, &buf, 1, dest6, luv_on_udp_send);
+  {
+    struct sockaddr_in6 dest6;
+    uv_ip6_addr(host, port, &dest6);
+    rc = uv_udp_send(req, handle, &buf, 1, (struct sockaddr *)&dest6, luv_on_udp_send);
     break;
+  }
   default:
     assert(0 && "unexpected family type");
     abort();
   }
 
-  if (rc) {
-    uv_err_t err = uv_last_error(luv_get_loop(L));
-    return luaL_error(L, "udp_send: %s", uv_strerror(err));
+  if (rc < 0) {
+    return luaL_error(L, "udp_send: %s", uv_strerror(rc));
   }
 
   return 0;
@@ -275,9 +283,8 @@ int luv_udp_send6(lua_State* L) {
 
 int luv_udp_recv_start(lua_State* L) {
   uv_udp_t* handle = (uv_udp_t*)luv_checkudata(L, 1, "udp");
-  int rc = uv_udp_recv_start(handle, luv_on_alloc, luv_on_udp_recv);
-  if (rc && uv_last_error(luv_get_loop(L)).code != UV_EALREADY) {
-    uv_err_t err = uv_last_error(luv_get_loop(L));
+  int err = uv_udp_recv_start(handle, luv_on_alloc, luv_on_udp_recv);
+  if (err < 0) {
     return luaL_error(L, "udp_recv_start: %s", uv_strerror(err));
   }
   luv_handle_ref(L, handle->data, 1);
@@ -286,8 +293,8 @@ int luv_udp_recv_start(lua_State* L) {
 
 int luv_udp_recv_stop(lua_State* L) {
   uv_udp_t* handle = (uv_udp_t*)luv_checkudata(L, 1, "udp");
-  if (uv_udp_recv_stop(handle)) {
-    uv_err_t err = uv_last_error(luv_get_loop(L));
+  int err = uv_udp_recv_stop(handle);
+  if (err < 0) {
     return luaL_error(L, "udp_recv_stop: %s", uv_strerror(err));
   }
   luv_handle_unref(L, handle->data);

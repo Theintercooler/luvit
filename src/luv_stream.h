@@ -25,7 +25,7 @@
 #include "luv_handle.h"
 
 void luv_on_connection(uv_stream_t* handle, int status);
-void luv_on_read(uv_stream_t* handle, ssize_t nread, uv_buf_t buf);
+void luv_on_read(uv_stream_t* stream, ssize_t nread, const uv_buf_t* buf);
 void luv_after_shutdown(uv_shutdown_t* req, int status);
 void luv_after_write(uv_write_t* req, int status);
 void luv_after_connect(uv_connect_t* req, int status);

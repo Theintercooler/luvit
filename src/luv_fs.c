@@ -105,11 +105,8 @@ int luv_process_fs_result(lua_State* L, uv_fs_t* req) {
   luv_fs_ref_t* ref = req->data;
 
   int argc = 0;
-  if (req->result == -1) {
-    uv_err_t err;
-    memset(&err, 0, sizeof err);
-    err.code = (uv_err_code)req->errorno;
-    luv_push_async_error(L, err, "after_fs", req->path);
+  if (req->result < 0) {
+    luv_push_async_error(L, req->result, "after_fs", req->path);
   } else {
     lua_pushnil(L);
     switch (req->fs_type) {
@@ -220,22 +217,22 @@ uv_fs_t* luv_fs_store_callback(lua_State* L, int index) {
 
 #define FS_CALL(func, cb_index, path, ...)                                    \
   do {                                                                        \
-    uv_err_t err;                                                             \
     int argc;                                                                 \
+    int err ;                                                                 \
     if (lua_isfunction(L, cb_index)) {                                        \
-      if (uv_fs_##func(luv_get_loop(L), req, __VA_ARGS__, luv_after_fs)) {  \
-        err = uv_last_error(luv_get_loop(L));                                 \
+      int err = uv_fs_##func(luv_get_loop(L), req, __VA_ARGS__, luv_after_fs);\
+      if (err < 0) {                                                              \
         luv_push_async_error(L, err, #func, path);                            \
         return lua_error(L);                                                  \
       }                                                                       \
       return 0;                                                               \
     }                                                                         \
-    if (uv_fs_##func(luv_get_loop(L), req, __VA_ARGS__, NULL) < 0) {        \
-      err = uv_last_error(luv_get_loop(L));                                 \
+    err = uv_fs_##func(luv_get_loop(L), req, __VA_ARGS__, NULL);              \
+    if (err < 0) {                                                           \
       luv_push_async_error(L, err, #func, path);                              \
       return lua_error(L);                                                    \
     }                                                                         \
-    argc = luv_process_fs_result(L, req);                                 \
+    argc = luv_process_fs_result(L, req);                                     \
     lua_remove(L, -argc - 1);                                                 \
     return argc;                                                              \
   } while (0)

@@ -25,8 +25,8 @@ void luv_on_fs_event(uv_fs_event_t* handle, const char* filename, int events, in
   /* load the lua state and the userdata */
   lua_State *L = luv_handle_get_lua(handle->data);
 
-  if (status == -1) {
-    luv_push_async_error(L, uv_last_error(luv_get_loop(L)), "on_fs_event", NULL);
+  if (status < 0) {
+    luv_push_async_error(L, status, "on_fs_event", NULL);
     luv_emit_event(L, "error", 1);
   } else {
 
@@ -52,7 +52,9 @@ void luv_on_fs_event(uv_fs_event_t* handle, const char* filename, int events, in
 int luv_new_fs_watcher (lua_State* L) {
   const char* filename = luaL_checkstring(L, 1);
   uv_fs_event_t* handle = luv_create_fs_watcher(L);
-  uv_fs_event_init(luv_get_loop(L), handle, filename, luv_on_fs_event, 0);
+  uv_loop_t *loop = luv_get_loop(L);
+  uv_fs_event_init(loop, handle);
+  uv_fs_event_start(handle, luv_on_fs_event, filename, 0);
   luv_handle_ref(L, handle->data, -1);
   return 1;
 }

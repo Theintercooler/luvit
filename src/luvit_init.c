@@ -107,14 +107,13 @@ static void crypto_lock_cb(int mode, int n, const char* file, int line) {
 static char getbuf[PATH_MAX + 1];
 
 static int luvit_getcwd(lua_State* L) {
-  uv_err_t rc;
-
-  rc = uv_cwd(getbuf, ARRAY_SIZE(getbuf) - 1);
-  if (rc.code != UV_OK) {
+  size_t size = ARRAY_SIZE(getbuf) - 1;
+  int rc = uv_cwd(getbuf, &size);
+  if (rc < 0) {
     return luaL_error(L, "luvit_getcwd: %s\n", strerror(errno));
   }
 
-  getbuf[ARRAY_SIZE(getbuf) - 1] = '\0';
+  getbuf[size] = '\0';
   lua_pushstring(L, getbuf);
   return 1;
 }
@@ -176,7 +175,6 @@ int luvit_init(lua_State *L, uv_loop_t* loop, int argc, char *argv[])
 int luvit_init(lua_State *L, uv_loop_t* loop)
 #endif
 {
-  int rc;
 
 #if defined(__unix__) || defined(__POSIX__)
   _luv_register_signal_handler(SIGPIPE, SIG_IGN);
@@ -288,8 +286,8 @@ int luvit_init(lua_State *L, uv_loop_t* loop)
 #endif
 
   /* Hold a reference to the main thread in the registry */
-  rc = lua_pushthread(L);
-  assert(rc == 1);
+  int rc = lua_pushthread(L);
+  assert(rc == 1); (void) rc;
   lua_setfield(L, LUA_REGISTRYINDEX, "main_thread");
 
   /* Store the loop within the registry */

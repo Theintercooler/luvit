@@ -51,11 +51,10 @@ void luv_emit_event(lua_State* L, const char* name, int nargs) {
   luv_acall(L, nargs, 0, name);
 }
 
-uv_buf_t luv_on_alloc(uv_handle_t* handle, size_t suggested_size) {
-  uv_buf_t buf;
-  buf.base = malloc(suggested_size);
-  buf.len = suggested_size;
-  return buf;
+void luv_on_alloc(uv_handle_t* handle, size_t suggested_size, uv_buf_t* buf)
+{
+  buf->base = malloc(suggested_size);
+  buf->len = suggested_size;
 }
 
 void luv_on_close(uv_handle_t* handle) {

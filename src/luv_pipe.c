@@ -40,8 +40,8 @@ int luv_pipe_bind(lua_State* L) {
   uv_pipe_t* handle = (uv_pipe_t*)luv_checkudata(L, 1, "pipe");
   const char* name = luaL_checkstring(L, 2);
 
-  if (uv_pipe_bind(handle, name)) {
-    uv_err_t err = uv_last_error(luv_get_loop(L));
+  int err = uv_pipe_bind(handle, name);
+  if (err < 0) {
     return luaL_error(L, "pipe_bind: %s", uv_strerror(err));
   }
 

@@ -157,8 +157,8 @@ int luv_interface_addresses(lua_State* L) {
 int luv_execpath(lua_State* L) {
   size_t size = 2*PATH_MAX;
   char exec_path[2*PATH_MAX];
-  if (uv_exepath(exec_path, &size)) {
-    uv_err_t err = uv_last_error(luv_get_loop(L));
+  int err = uv_exepath(exec_path, &size);
+  if (err < 0) {
     return luaL_error(L, "uv_exepath: %s", uv_strerror(err));
   }
   lua_pushlstring(L, exec_path, size);
@@ -167,8 +167,8 @@ int luv_execpath(lua_State* L) {
 
 int luv_get_process_title(lua_State* L) {
   char title[8192];
-  uv_err_t err = uv_get_process_title(title, 8192);
-  if (err.code) {
+  int err = uv_get_process_title(title, 8192);
+  if (err < 0) {
     return luaL_error(L, "uv_get_process_title: %s: %s", uv_err_name(err), uv_strerror(err));
   }
   lua_pushstring(L, title);
@@ -177,8 +177,8 @@ int luv_get_process_title(lua_State* L) {
 
 int luv_set_process_title(lua_State* L) {
   const char* title = luaL_checkstring(L, 1);
-  uv_err_t err = uv_set_process_title(title);
-  if (err.code) {
+  int err = uv_set_process_title(title);
+  if (err < 0) {
     return luaL_error(L, "uv_set_process_title: %s: %s", uv_err_name(err), uv_strerror(err));
   }
   return 0;
