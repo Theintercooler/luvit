@@ -1,5 +1,5 @@
 /*
- *  Copyright 2012 The Luvit Authors. All Rights Reserved.
+ *  Copyright 2013 The Luvit Authors. All Rights Reserved.
  *
  *  Licensed under the Apache License, Version 2.0 (the "License");
  *  you may not use this file except in compliance with the License.
@@ -15,31 +15,20 @@
  *
  */
 
-#ifndef LUV_DNS
-#define LUV_DNS
+#ifndef LUV_SIGNAL
+#define LUV_SIGNAL
 
-#include "lua.h"
 #include "lauxlib.h"
+#include "lua.h"
+#include "luv_handle.h"
+#include "utils.h"
 #include "uv.h"
 
-#include "utils.h"
+int luv_new_signal(lua_State* L);
 
 /* Wrapped functions exposed to lua */
-int luv_dns_queryA(lua_State* L);
-int luv_dns_queryAaaa(lua_State* L);
-int luv_dns_queryCname(lua_State* L);
-int luv_dns_queryMx(lua_State* L);
-int luv_dns_queryNs(lua_State* L);
-int luv_dns_queryTxt(lua_State* L);
-int luv_dns_querySrv(lua_State* L);
-int luv_dns_getHostByAddr(lua_State* L);
-
-int luv_dns_getAddrInfo(lua_State* L);
-
-int luv_dns_isIp(lua_State* L);
-int luv_dns_isIpV4(lua_State* L);
-int luv_dns_isIpV6(lua_State* L);
-
-void luv_dns_initialize(lua_State *L);
+int luv_signal_start(lua_State* L);
+int luv_signal_stop(lua_State* L);
 
 #endif
+

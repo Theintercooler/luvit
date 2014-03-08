@@ -16,15 +16,27 @@ limitations under the License.
 
 --]]
 
-require("helper")
-local path = require('path')
-local fs = require('fs')
+require('helper')
 
-local tmp_file = path.join(__dirname, 'tmp', 'test_pipe')
-fs.writeFileSync(tmp_file, "")
+local Emitter = require('core').Emitter
+local http = require('http')
 
-local file_path = path.join(__dirname, 'test-pipe.lua')
-local fp = fs.createReadStream(file_path)
-local null = fs.createWriteStream(tmp_file)
-fp:pipe(null)
-assert(true)
+local errorsCaught = 0
+
+-- Mock socket object
+socket = Emitter:new()
+
+-- Verify that Response object correctly propagates errors from the underlying
+-- socket (e.g. EPIPE, ECONNRESET, etc.)
+res = http.Response:new(socket)
+res:on('error', function(err)
+  errorsCaught = errorsCaught + 1
+end)
+
+socket:emit('error', {})
+socket:emit('error', {})
+socket:emit('error', {})
+
+process:on('exit', function()
+  assert(errorsCaught == 3)
+end)

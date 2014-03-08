@@ -20,7 +20,7 @@ local http = require('luvit.http')
 local tls = require('luvit.tls')
 local url = require('luvit.url')
 
-function createConnection(...)
+local function createConnection(...)
   local args = {...}
   local options = {}
   local callback
@@ -49,7 +49,7 @@ function createConnection(...)
   return tls.connect(options, callback)
 end
 
-function request(options, callback)
+local function request(options, callback)
   if options.protocol and options.protocol ~= 'https' then
     error(fmt('Protocol %s not supported', options.protocol))
   end

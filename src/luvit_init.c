@@ -152,16 +152,36 @@ int luvit_init_ssl()
 }
 #endif
 
+#if defined(__unix__) || defined(__POSIX__)
+static void _luv_register_signal_handler(int signal, void (*handler)(int signal))
+{
+  struct sigaction sa;
+
+  memset(&sa, 0, sizeof(sa));
+  sa.sa_handler = handler;
+  sigfillset(&sa.sa_mask);
+  sigaction(signal, &sa, NULL);
+}
+
+static void _signal_exit(int signal)
+{
+  uv_tty_reset_mode();
+  _exit(128 + signal);
+}
+#endif
+
 #ifdef LUVIT_STANDALONE
 int luvit_init(lua_State *L, uv_loop_t* loop, int argc, char *argv[])
 #else
 int luvit_init(lua_State *L, uv_loop_t* loop)
 #endif
 {
-#ifdef LUVIT_STANDALONE
-  int index, rc;
-#else
   int rc;
+
+#if defined(__unix__) || defined(__POSIX__)
+  _luv_register_signal_handler(SIGPIPE, SIG_IGN);
+  _luv_register_signal_handler(SIGINT, _signal_exit);
+  _luv_register_signal_handler(SIGTERM, _signal_exit);
 #endif
 
   /* Pull up the preload table */
@@ -274,6 +294,9 @@ int luvit_init(lua_State *L, uv_loop_t* loop)
 
   /* Store the loop within the registry */
   luv_set_loop(L, loop);
+
+  /* ares setup */
+  luv_dns_initialize(L);
 
   return 0;
 }

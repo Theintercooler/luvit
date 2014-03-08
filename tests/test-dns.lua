@@ -21,7 +21,19 @@ require("helper")
 local dns = require('dns')
 local net = require('net')
 
+local resolveCbHappened
+
+dns.resolve4('luvit.io')
+dns.resolve6('luvit.io')
+dns.reverse('8.8.8.8')
+dns.resolveMx('luvit.io')
+dns.resolveNs('luvit.io')
+dns.resolveSrv('_jabber._tcp.google.com')
+dns.resolveCname('api.luvit.io')
+dns.resolveTxt('google.com')
+
 dns.resolve4('luvit.io', function(err, addresses)
+  resolveCbHappened = 1
   assert(type(err) == 'nil')
   assert(type(addresses) == 'table')
   assert(#addresses > 0)
@@ -105,6 +117,10 @@ dns.lookup('::1', function(err, ip, family)
   assert(type(err) == 'nil')
   assert(type(ip) == 'string')
   assert(type(family) == 'number')
+end)
+
+process:on('exit', function()
+  assert(resolveCbHappened ~= nil)
 end)
 
 assert(net.isIP('127.0.0.1') == 4)

@@ -79,7 +79,7 @@ void luv_push_stats_table(lua_State* L, uv_stat_t* s) {
   lua_setfield(L, -2, "is_symbolic_link");
   lua_pushboolean(L, S_ISSOCK(s->st_mode));
   lua_setfield(L, -2, "is_socket");
-#ifdef __POSIX__
+#if defined(__unix__) || defined(__POSIX__)
   lua_pushinteger(L, s->st_blksize);
   lua_setfield(L, -2, "blksize");
   lua_pushinteger(L, s->st_blocks);

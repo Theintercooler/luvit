@@ -158,7 +158,7 @@ function IncomingMessage:_addHeaderLine(field, value)
   local headerMap = {}
   field = field:lower()
 
-  function commaSeparate()
+  local function commaSeparate()
     if dest[field] then
       dest[field] = dest[field] .. ', ' .. value
     else
@@ -166,7 +166,7 @@ function IncomingMessage:_addHeaderLine(field, value)
     end
   end
 
-  function default()
+  local function default()
     if field:sub(1,2) == 'x-' then
       if dest[field] then
         dest[field] = dest[field] .. ', ' .. value
@@ -180,7 +180,7 @@ function IncomingMessage:_addHeaderLine(field, value)
     end
   end
 
-  function setCoookie()
+  local function setCookie()
     if dest[field] then
       table.insert(dest[field], value)
     else
@@ -681,7 +681,7 @@ function ClientRequest:setTimeout(msecs, callback)
     self:once('timeout', callback)
   end
 
-  function emitTimeout()
+  local function emitTimeout()
     self:emit('timeout')
   end
 
@@ -721,8 +721,7 @@ end
 
 function ClientRequest:onSocket(socket)
   local response = ServerResponse:new(self)
-  local current_field
-  local headers
+  local headers, current_field
   response.socket = socket
 
   self.socket = socket
@@ -786,7 +785,8 @@ function ClientRequest:onSocket(socket)
     local nparsed = self.parser:execute(chunk, 0, #chunk)
     -- If it wasn't all parsed then there was an error parsing
     if nparsed < #chunk then
-      response:emit("error", "parse error")
+      local err = Error:new('parse error')
+      self:emit("error", err)
     end
   end)
   socket:on('error', function(err)
@@ -847,6 +847,10 @@ function Response:initialize(socket)
   self.header_names = {}
   self.headers_sent = false
   self.socket = socket
+
+  self.socket:on('error', function(err)
+      self:emit('error', err)
+  end)
 end
 
 Response.auto_date = true
@@ -866,7 +870,7 @@ function Response:setHeader(name, value)
   local lower = name:lower()
   local old_name = self.header_names[lower]
   if old_name then
-    headers[old_name] = nil
+    self.headers[old_name] = nil
   end
   self.header_names[lower] = name
   self.headers[name] = value

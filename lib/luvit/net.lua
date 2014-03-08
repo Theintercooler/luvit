@@ -51,7 +51,7 @@ function Socket:_connect(address, port, addressType)
 
   -- connect only returns an error or nothing
   if (connectionReq ~= nil) then
-    self:destroy(err)
+    self:destroy()
   end
 end
 
