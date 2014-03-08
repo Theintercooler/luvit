@@ -1,7 +1,34 @@
+cmake_minimum_required(VERSION 2.8)
 project (luvit C)
 
 set(HAVE_HTTP_PARSER DEFINED HTTP_PARSER_INCLUDE_DIRS)
 set(HAVE_YAJL DEFINED YAJL_INCLUDE_DIRS)
+
+if(NOT DEFINED LUAJIT_INCLUDE_DIRS)
+    find_package(PkgConfig)
+    message(STATUS "Detecting LuaJIT...")
+    if(PKG_CONFIG_FOUND)
+        message(STATUS "Using pkg-config to detect LuaJIT...")
+        pkg_check_modules(LUAJIT luajit)
+        if(LUAJIT_FOUND)
+            message(STATUS "Found LuaJIT.")
+            message(STATUS "include: ${LUAJIT_INCLUDE_DIRS}")
+            include_directories(${LUAJIT_INCLUDE_DIRS})
+            link_directories(${LUAJIT_LIBRARY_DIRS})
+            set(EXTRA_LIBS ${LUAJIT_LIBRARIES})
+        else()
+            message(FATAL_ERROR "LuaJIT not found.")
+        endif()
+    else()
+        message(STATUS "Using local LuaJIT.")
+        set(LUAJIT_LIBRARIES luajit)
+    endif()
+endif()
+
+option(HAVE_LOCAL_LIBUV 0)
+if(${HAVE_LOCAL_LIBUV})
+    add_subdirectory(libraries/uv)
+endif()
 
 set(LUVIT_INCLUDE_DIRS
     ${HTTP_PARSER_INCLUDE_DIRS}
@@ -71,7 +98,9 @@ set(LUVIT_LIBRARIES
 	${LUVIT_LIBRARY}
 	CACHE INTERNAL "Luvit libraries")
 
-install(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/lib/luvit
-    DESTINATION ${INSTALL_LUA_DIR}
-    PATTERN "*")
+if(DEFINED INSTALL_LUA_DIR)
+    install(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/lib/luvit
+        DESTINATION ${INSTALL_LUA_DIR}
+        PATTERN "*")
+endif()
 

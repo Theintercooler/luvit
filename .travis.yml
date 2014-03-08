@@ -1,8 +1,15 @@
-language: erlang
+language: c
+
+before_install:
+  - sudo apt-get -y install build-essential libluajit-5.1-dev
 
 script:
-  - "make test"
+  - git submodule add https://github.com/Theintercooler/libuv.git libraries/uv
+  - (mkdir cmakebuild && cd cmakebuild && cmake -DHAVE_LOCAL_LIBUV=1 .. && make -j5 && cd .. && rm -rf cmakebuild)
 
+compiler:
+  - clang
+  - gcc
+  
 notifications:
-  email: true
-  irc: "irc.freenode.org#luvit"
+  webhooks: http://n.tkte.ch/h/1190/FtqFf9yfzU4_ZtwbgF3-rHUh
