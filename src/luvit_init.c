@@ -196,10 +196,12 @@ int luvit_init(lua_State *L, uv_loop_t* loop)
   lua_setfield(L, -2, "_crypto");
 #endif
 
+#ifdef HAVE_YAJL
   /* Register yajl */
   lua_pushcfunction(L, luaopen_yajl);
   lua_setfield(L, -2, "yajl");
-
+#endif
+  
   /* Register debug */
   lua_pushcfunction(L, luaopen_debugger);
   lua_setfield(L, -2, "_debug");
@@ -207,10 +209,12 @@ int luvit_init(lua_State *L, uv_loop_t* loop)
   lua_pushcfunction(L, luaopen_os_binding);
   lua_setfield(L, -2, "os_binding");
 
+#ifdef HAVE_HTTP_PARSER
   /* Register http_parser */
   lua_pushcfunction(L, luaopen_http_parser);
   lua_setfield(L, -2, "http_parser");
-
+#endif
+  
   /* Register uv */
   lua_pushcfunction(L, luaopen_uv_native);
   lua_setfield(L, -2, "uv_native");

@@ -33,6 +33,7 @@ set(LUVIT_SOURCES
     ${CMAKE_CURRENT_SOURCE_DIR}/src/luv_pipe.c
     ${CMAKE_CURRENT_SOURCE_DIR}/src/luv_process.c
     ${CMAKE_CURRENT_SOURCE_DIR}/src/luv_stream.c
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/luv_signal.c
     ${CMAKE_CURRENT_SOURCE_DIR}/src/luv_tcp.c
     ${CMAKE_CURRENT_SOURCE_DIR}/src/luv_timer.c
 #   ${CMAKE_CURRENT_SOURCE_DIR}/src/luv_tls.c
@@ -48,7 +49,7 @@ if(${HAVE_HTTP_PARSER})
 endif()
 
 if(${HAVE_YAJL})
-    add_definitions(-DHAVE_HTTP_YAJL)
+    add_definitions(-DHAVE_YAJL)
     set(LUVIT_SOURCES ${LUVIT_SOURCES} ${CMAKE_CURRENT_SOURCE_DIR}/src/lyajl.c)
 endif()
     

@@ -15,7 +15,7 @@
  *
  */
 
-#ifndef LYAJL
+#if !defined(LYAJL) && defined(HAVE_YAJL)
 #define LYAJL
 
 #include "lua.h"

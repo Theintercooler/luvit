@@ -21,12 +21,15 @@
 #include <string.h>
 #include "luv_portability.h"
 #include "luv_dns.h"
-#include "ares.h"
 #include "tree.h"
 #include "utils.h"
 
+#ifdef HAVE_ARES
+#include "ares.h"
+
 static ares_channel luv_ares_channel;
 static uv_timer_t ares_timer;
+#endif
 
 typedef struct {
   lua_State* L;
@@ -34,12 +37,14 @@ typedef struct {
   uv_getaddrinfo_t handle;
 } luv_dns_ref_t;
 
+#ifdef HAVE_ARES
 typedef struct ares_task_t {
   UV_HANDLE_FIELDS
   ares_socket_t sock;
   uv_poll_t poll_watcher;
   RB_ENTRY(ares_task_t) node;
 } ares_task_t;
+#endif
 
 #ifndef offset_of
 # define offset_of(type, member) \
@@ -53,6 +58,7 @@ typedef struct ares_task_t {
                            offset_of(type, member)))
 #endif
 
+#ifdef HAVE_ARES
 /* ares tree task list */
 static RB_HEAD(ares_task_list, ares_task_t) ares_tasks;
 
@@ -208,6 +214,9 @@ void luv_dns_initialize(lua_State *L) {
   uv_timer_init(loop, &ares_timer);
 }
 
+#else
+void luv_dns_initialize(lua_State *L) {}
+#endif
 
 /* Utility for storing the callback in the dns_req token */
 static luv_dns_ref_t* luv_dns_store_callback(lua_State* L, int index) {
@@ -235,6 +244,7 @@ static void luv_dns_get_callback(luv_dns_ref_t *ref)
   luaL_unref(L, LUA_REGISTRYINDEX, ref->r);
 }
 
+#ifdef HAVE_ARES /* Only used with Ares */
 static void luv_addresses_to_array(lua_State *L, struct hostent *host)
 {
   char ip[INET6_ADDRSTRLEN];
@@ -257,6 +267,7 @@ static void luv_aliases_to_array(lua_State *L, struct hostent *host)
     lua_rawseti(L, -2, i+1);
   }
 }
+#endif
 
 static void luv_push_gai_async_error(lua_State *L, int status, const char* source)
 {
@@ -269,6 +280,7 @@ static void luv_push_gai_async_error(lua_State *L, int status, const char* sourc
   }
 }
 
+#ifdef HAVE_ARES
 /* Pushes an error object onto the stack */
 static void luv_push_ares_async_error(lua_State* L, int rc, const char* source)
 {
@@ -637,7 +649,6 @@ static void getHostByAddr_callback(void *arg, int status,int timeouts,
 cleanup:
   luv_dns_ref_cleanup(ref);
 }
-
 int luv_dns_getHostByAddr(lua_State* L)
 {
   ares_channel channel = luv_get_ares_channel(L);
@@ -665,7 +676,7 @@ int luv_dns_getHostByAddr(lua_State* L)
                      getHostByAddr_callback, ref);
   return 0;
 }
-
+#endif
 static void luv_dns_getaddrinfo_callback(uv_getaddrinfo_t* res, int status,
                                          struct addrinfo* start)
 {
@@ -725,6 +736,7 @@ int luv_dns_getAddrInfo(lua_State* L)
   return 0;
 }
 
+#ifdef HAVE_ARES
 static int luv_dns__isIp(lua_State *L, const char *ip, int v4v6) {
   int family;
   char address_buffer[sizeof(struct in6_addr)];
@@ -767,3 +779,4 @@ int luv_dns_isIpV6(lua_State* L) {
   const char *ip = luaL_checkstring(L, 1);
   return luv_dns__isIp(L, ip, 6);
 }
+#endif

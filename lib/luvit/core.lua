@@ -17,7 +17,7 @@ limitations under the License.
 --]]
 
 local table = require('table')
-local process = require "luvit.process"
+local process -- Loaded on demand as this file is loaded during init
 
 --[[
 This module is for various classes and utilities that don't need their own
@@ -150,6 +150,11 @@ core.Emitter = Emitter
 function Emitter:missingHandlerType(name, ...)
   if name == "error" then
     local args = {...}
+    
+    if process == nil then
+        process = require "luvit.process"
+    end
+    
     --error(tostring(args[1]))
     -- we define catchall error handler
     if self ~= process then

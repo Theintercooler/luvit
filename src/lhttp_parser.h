@@ -15,7 +15,7 @@
  *
  */
 
-#ifndef LHTTP_PARSER
+#if !defined(LHTTP_PARSER) && defined(HAVE_HTTP_PARSER)
 #define LHTTP_PARSER
 
 #include "lua.h"

@@ -121,6 +121,7 @@ static const luaL_reg luv_f[] = {
   {"signalStop",  luv_signal_stop},
 
   /* DNS functions */
+  #ifdef HAVE_ARES
   {"dnsQueryA", luv_dns_queryA},
   {"dnsQueryAaaa", luv_dns_queryAaaa},
   {"dnsQueryCname", luv_dns_queryCname},
@@ -129,10 +130,13 @@ static const luaL_reg luv_f[] = {
   {"dnsQueryTxt", luv_dns_queryTxt},
   {"dnsQuerySrv", luv_dns_querySrv},
   {"dnsGetHostByAddr", luv_dns_getHostByAddr},
+#endif
   {"dnsGetAddrInfo", luv_dns_getAddrInfo},
+#ifdef HAVE_ARES
   {"dnsIsIp", luv_dns_isIp},
   {"dnsIsIpV4", luv_dns_isIpV4},
   {"dnsIsIpV6", luv_dns_isIpV6},
+#endif
 
   /* FS functions */
   {"fsOpen", luv_fs_open},
