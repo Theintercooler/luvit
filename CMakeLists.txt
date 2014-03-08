@@ -1,6 +1,7 @@
 project (luvit C)
 
-set(HAVE_HTTP_PARSER ${HTTP_PARSER_INCLUDE_DIRS})
+set(HAVE_HTTP_PARSER DEFINED HTTP_PARSER_INCLUDE_DIRS)
+set(HAVE_YAJL DEFINED YAJL_INCLUDE_DIRS)
 
 set(LUVIT_INCLUDE_DIRS
     ${HTTP_PARSER_INCLUDE_DIRS}
@@ -44,11 +45,13 @@ set(LUVIT_SOURCES
     ${CMAKE_CURRENT_SOURCE_DIR}/src/utils.c)
 
 if(${HAVE_HTTP_PARSER})
+    message("-- luvit: detected http-parser")
     add_definitions(-DHAVE_HTTP_PARSER)
     set(LUVIT_SOURCES ${LUVIT_SOURCES} ${CMAKE_CURRENT_SOURCE_DIR}/src/lhttp_parser.c)
 endif()
 
 if(${HAVE_YAJL})
+    message("-- luvit: detected YAJL")
     add_definitions(-DHAVE_YAJL)
     set(LUVIT_SOURCES ${LUVIT_SOURCES} ${CMAKE_CURRENT_SOURCE_DIR}/src/lyajl.c)
 endif()
