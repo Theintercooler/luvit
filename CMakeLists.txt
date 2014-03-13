@@ -30,19 +30,33 @@ if(${HAVE_LOCAL_LIBUV})
     add_subdirectory(libraries/uv)
 endif()
 
+set(LUVIT_TEMP_DIR ${CMAKE_BINARY_DIR}/luvit)
+file(MAKE_DIRECTORY ${LUVIT_TEMP_DIR})
+
+file(MAKE_DIRECTORY ${LUVIT_TEMP_DIR}/include)
+file(MAKE_DIRECTORY ${LUVIT_TEMP_DIR}/include/luvit)
+
+FILE(GLOB_RECURSE HEADER_FILES "${CMAKE_CURRENT_SOURCE_DIR}/src/*.h")
+foreach(HEADER_FILE ${HEADER_FILES})
+    FILE(COPY "${HEADER_FILE}" DESTINATION "${LUVIT_TEMP_DIR}/include/luvit/")
+endforeach()
+
 set(LUVIT_INCLUDE_DIRS
+    ${LUVIT_TEMP_DIR}/include
     ${HTTP_PARSER_INCLUDE_DIRS}
     ${ARES_INCLUDE_DIRS}
     ${UV_INCLUDE_DIRS}
     ${LUAJIT_INCLUDE_DIRS}
     ${YAJL_INCLUDE_DIRS}
-    ${CMAKE_CURRENT_SOURCE_DIR}/src
     CACHE INTERNAL "Luvit include directories"
 )
 
 set(LUVIT_LIBRARY luvit CACHE INTERNAL "Luvit library")
 
-include_directories(${LUVIT_INCLUDE_DIRS})
+include_directories(
+    ${LUVIT_INCLUDE_DIRS}
+    ${CMAKE_CURRENT_SOURCE_DIR}/src
+)
 
 set(LUVIT_SOURCES
     ${CMAKE_CURRENT_SOURCE_DIR}/src/lconstants.c
