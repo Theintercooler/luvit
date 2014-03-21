@@ -496,7 +496,7 @@ LUALIB_API int luaopen_yajl (lua_State *L) {
   luaL_openlib(L, NULL, lyajl_gen_m, 0);
   lua_pushvalue(L, -1);
 
-  luaL_openlib(L, "_yajl", lyajl_lib, 1);
+  luaL_openlib(L, NULL, lyajl_lib, 1);
 
   /* And version info */
   lua_pushnumber(L, YAJL_MAJOR);
