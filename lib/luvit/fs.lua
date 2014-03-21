@@ -282,20 +282,31 @@ function ReadStream:_read()
 
   fs.read(self.fd, self.offset, to_read, function (err, chunk, len)
     if err or len == 0 then
-      fs.close(self.fd, function (err)
-        if err then return self:emit("error", err) end
-        self:emit("close")
-      end)
+      self:close()
       if err then return self:emit("error", err) end
 
       self.reading = false
       self:emit("end")
     else
-      self:emit("data", chunk, len)
+      self:emit("data", chunk, len, to_read)
       self.offset = self.offset + len
-      self:_read()
+
+      if self.fd ~= nil then
+        self:_read()
+      else
+        self:emit("end")
+      end
     end
   end)
+end
+
+function ReadStream:close()
+  if self.fd == nil then return end
+  fs.close(self.fd, function (err)
+    if err then return self:emit("error", err) end
+      self:emit("close")
+  end)
+  self.fd = nil
 end
 
 -- TODO: Implement backpressure here and in tcp streams

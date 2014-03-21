@@ -193,8 +193,8 @@ _G.jit = nil
 _G.bit = nil
 _G.debug = nil
 _G.table = nil
-_G.loadfile = nil
-_G.dofile = nil
+--_G.loadfile = nil
+--_G.dofile = nil
 _G.print = utils.print
 _G.p = utils.prettyPrint
 _G.debug = utils.debug
@@ -295,3 +295,12 @@ local realAssert = assert
 function assert(good, error)
   return realAssert(good, tostring(error))
 end
+
+setmetatable(_G, {
+  __index = function(self, key)
+    process.stderr:write(traceback("Attepmting to get a global variable \"%s\""):format(tostring(key)).."\n")
+  end,
+  __newindex = function(self, key, value)
+    process.stderr:write(traceback("Attepmting to set a global variable \"%s\""):format(tostring(key)).."\n")
+  end,
+})
