@@ -86,6 +86,8 @@ local function colorize_nop(color, obj)
   return obj
 end
 
+utils.DUMP_MAX_DEPTH = 1
+
 function utils.dump(o, depth, no_colorize)
   local colorize_func
   local _escapes
@@ -127,7 +129,7 @@ function utils.dump(o, depth, no_colorize)
     if type(depth) == 'nil' then
       depth = 0
     end
-    if depth > 1 then
+    if depth > utils.DUMP_MAX_DEPTH then
       return colorize_func("yellow", tostring(o))
     end
     local indent = ("  "):rep(depth)
