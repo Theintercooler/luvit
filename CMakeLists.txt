@@ -3,6 +3,7 @@ project (luvit C)
 
 set(HAVE_HTTP_PARSER DEFINED HTTP_PARSER_INCLUDE_DIRS)
 set(HAVE_YAJL DEFINED YAJL_INCLUDE_DIRS)
+set(HAVE_ODBXUV_LUA DEFINED ODBXUVLUA_INCLUDE_DIRS)
 
 if(NOT DEFINED LUAJIT_INCLUDE_DIRS)
     find_package(PkgConfig)
@@ -96,6 +97,11 @@ if(${HAVE_YAJL})
     add_definitions(-DHAVE_YAJL)
     set(LUVIT_SOURCES ${LUVIT_SOURCES} ${CMAKE_CURRENT_SOURCE_DIR}/src/lyajl.c)
 endif()
+
+if(${HAVE_ODBXUV_LUA})
+    message("-- luvit: detected ODBX-uv-lua")
+    add_definitions(-DHAVE_ODBXUV_LUA)
+endif()
     
 
 add_library(${LUVIT_LIBRARY} STATIC ${LUVIT_SOURCES})
@@ -106,6 +112,7 @@ target_link_libraries(${LUVIT_LIBRARY}
     ${ZLIB_LIBRARIES}
     ${HTTP_PARSER_LIBRARIES}
     ${YAJL_LIBRARIES}
+    ${ODBXUVLUA_LIBRARIES}
 )
 
 set(LUVIT_LIBRARIES

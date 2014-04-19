@@ -42,6 +42,10 @@
 #include "lyajl.h"
 #include "lenv.h"
 
+#ifdef HAVE_ODBXUV_LUA
+extern int luaopen_opendbxuv (lua_State* L);
+#endif
+
 static int luvit_exit(lua_State* L) {
   int exit_code = luaL_checkint(L, 1);
   exit(exit_code);
@@ -200,6 +204,12 @@ int luvit_init(lua_State *L, uv_loop_t* loop)
   /* Register yajl */
   lua_pushcfunction(L, luaopen_yajl);
   lua_setfield(L, -2, "yajl");
+#endif
+
+#ifdef HAVE_ODBXUV_LUA
+  /* Register odbxuv-lua */
+  lua_pushcfunction(L, luaopen_opendbxuv);
+  lua_setfield(L, -2, "opendbxuv");
 #endif
   
   /* Register debug */
