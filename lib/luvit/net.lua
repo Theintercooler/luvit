@@ -282,6 +282,7 @@ function Server:listen(port, ... --[[ ip, callback --]] )
   local args = {...}
   local ip
   local callback
+  local flags = 0
 
   if not self._handle then
     self._handle = Tcp:new()
@@ -296,7 +297,7 @@ function Server:listen(port, ... --[[ ip, callback --]] )
   end
   ip = ip or '0.0.0.0'
 
-  self._handle:bind(ip, port)
+  self._handle:bind(ip, port, flags)
   self._handle:on('listening', callback)
   self._handle:on('error', function(err)
     return self:emit("error", err)
