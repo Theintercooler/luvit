@@ -78,6 +78,7 @@ set(LUVIT_SOURCES
 #   ${CMAKE_CURRENT_SOURCE_DIR}/src/luvit_main.c
     ${CMAKE_CURRENT_SOURCE_DIR}/src/luv_misc.c
     ${CMAKE_CURRENT_SOURCE_DIR}/src/luv_pipe.c
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/luv_poll.c
     ${CMAKE_CURRENT_SOURCE_DIR}/src/luv_process.c
     ${CMAKE_CURRENT_SOURCE_DIR}/src/luv_stream.c
     ${CMAKE_CURRENT_SOURCE_DIR}/src/luv_signal.c

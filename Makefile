@@ -141,6 +141,8 @@ CPPFLAGS += -DOPENSSL_NO_MDC2
 CPPFLAGS += -DOPENSSL_NO_MD2
 CPPFLAGS += -DOPENSSL_NO_SEED
 CPPFLAGS += -DOPENSSL_NO_SOCK
+CPPFLAGS += -DOPENSSL_NO_SCTP
+CPPFLAGS += -DOPENSSL_NO_EC2M
 
 ifeq (${MH_NAME},x86_64)
 CPPFLAGS += -I${SSLDIR}/openssl-configs/x64
@@ -165,6 +167,7 @@ LUVLIBS=${BUILDDIR}/utils.o          \
         ${BUILDDIR}/luv_tls.o        \
         ${BUILDDIR}/luv_tls_conn.o   \
         ${BUILDDIR}/luv_pipe.o       \
+        ${BUILDDIR}/luv_poll.o        \
         ${BUILDDIR}/luv_tty.o        \
         ${BUILDDIR}/luv_misc.o       \
         ${BUILDDIR}/luv.o            \
@@ -224,6 +227,9 @@ ${UVDIR}/Makefile:
 
 ${UVDIR}/libuv.a: ${UVDIR}/Makefile
 	$(MAKE) -C ${UVDIR}
+
+${CARESDIR}/Makefile:
+	git submodule update --init --recursive
 
 ${CARESDIR}/libcares.a: ${CARESDIR}/Makefile
 	$(MAKE) -C ${CARESDIR}
