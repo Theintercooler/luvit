@@ -266,7 +266,7 @@ int luv_fs_read(lua_State* L) {
   buf = malloc(length);
   ((luv_fs_ref_t*)req->data)->buf = buf;
   
-  uv_buf_t bufs[0];
+  uv_buf_t bufs[1];
   bufs[0].base = buf;
   bufs[0].len = length;
   
@@ -285,7 +285,7 @@ int luv_fs_write(lua_State* L) {
   luv_io_ctx_callback_add(L, &ref->cbs, 4);
   req = &ref->fs_req;
   
-  uv_buf_t bufs[0];
+  uv_buf_t bufs[1];
   bufs[0].base = chunk;
   bufs[0].len = length;
   FS_CALL(write, 4, NULL, file, bufs, 1, offset);
