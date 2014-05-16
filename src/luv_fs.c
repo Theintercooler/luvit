@@ -48,13 +48,13 @@ void luv_push_stats_table(lua_State* L, uv_stat_t* s) {
   lua_pushinteger(L, s->st_size);
   lua_setfield(L, -2, "size");
 #ifndef _WIN32
-  lua_pushinteger(L, s->st_atime);
+  lua_pushinteger(L, s->st_atim.tv_sec);
 #else
   lua_pushinteger(L, -1);
 #endif
   lua_setfield(L, -2, "atime");
 #ifndef _WIN32
-  lua_pushinteger(L, s->st_mtime);
+  lua_pushinteger(L, s->st_mtim.tv_sec);
 #else
   lua_pushinteger(L, -1);
 #endif
