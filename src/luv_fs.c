@@ -53,6 +53,8 @@ void luv_push_stats_table(lua_State* L, uv_stat_t* s) {
   lua_setfield(L, -2, "mtime");
   lua_pushinteger(L, s->st_ctim.tv_sec);
   lua_setfield(L, -2, "ctime");
+  lua_pushinteger(L, s->st_birthtim.tv_sec);
+  lua_setfield(L, -2, "birthtime");
   lua_pushboolean(L, S_ISREG(s->st_mode));
   lua_setfield(L, -2, "is_file");
   lua_pushboolean(L, S_ISDIR(s->st_mode));
