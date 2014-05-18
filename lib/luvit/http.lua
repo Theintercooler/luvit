@@ -108,7 +108,7 @@ function IncomingMessage:initialize(socket)
 end
 
 function IncomingMessage:destroy(...)
-  self.socket:destroy(...)
+  return self.socket and self.socket:destroy(...)
 end
 
 function IncomingMessage:pause()
@@ -228,7 +228,7 @@ function OutgoingMessage:initialize()
 end
 
 function OutgoingMessage:destroy(err)
-  self.socket:destroy(err)
+  return self.socket and self.socket:destroy(err)
 end
 
 function OutgoingMessage:_send(data, encoding)
@@ -833,7 +833,7 @@ function Request:initialize(socket)
 end
 
 function Request:destroy(...)
-  return self.socket:destroy(...)
+  return self.socket and self.socket:destroy(...)
 end
 
 --------------------------------------------------------------------------------
@@ -1065,7 +1065,7 @@ function Response:done(callback)
 end
 
 function Response:destroy(...)
-  return self.socket:destroy(...)
+  return self.socket and self.socket:destroy(...)
 end
 
 --------------------------------------------------------------------------------
