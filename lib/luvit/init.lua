@@ -195,6 +195,7 @@ _G.debug = nil
 _G.table = nil
 --_G.loadfile = nil
 --_G.dofile = nil
+_G.printSync = _G.printSync or print
 _G.print = utils.print
 _G.p = utils.prettyPrint
 _G.debug = utils.debug
