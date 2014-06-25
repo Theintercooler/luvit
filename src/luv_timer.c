@@ -26,17 +26,11 @@ int luv_new_timer (lua_State* L) {
   return 1;
 }
 
-void luv_on_timer(uv_timer_t* handle, int status) {
+void luv_on_timer(uv_timer_t* handle) {
   /* load the lua state and put the userdata on the stack */
   lua_State* L = luv_handle_get_lua(handle->data);
 
-  if (status < 0) {
-    luv_push_async_error(L, status, "on_timer", NULL);
-    luv_emit_event(L, "error", 1);
-  } else {
     luv_emit_event(L, "timeout", 0);
-  }
-
 }
 
 int luv_timer_start(lua_State* L) {
