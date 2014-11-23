@@ -142,6 +142,16 @@ Also it can easily be sub-classed.
     local Custom = Emitter:extend()
     local c = Custom:new()
     c:on('bar', onBar)
+
+Unlike EventEmitter in node.js, Emitter class doesn't auto binds `self`
+reference. This means, if a callback handler is expecting a `self` reference,
+utils.bind() should be used, and the callback handler should have a `self` at
+the beginning its parameter list.
+
+    function some_func(self, a, b, c)
+    end
+    emitter:on('end', utils.bind(some_func, emitter))
+    emitter:emit('end', 'a', 'b', 'c')
 ]]
 local Emitter = Object:extend()
 core.Emitter = Emitter
@@ -203,6 +213,19 @@ function Emitter:on(name, callback)
   return self
 end
 
+function Emitter:listenerCount(name)
+  local handlers = rawget(self, "handlers")
+  if not handlers then
+    return 0
+  end
+  local handlers_for_type = rawget(handlers, name)
+  if not handlers_for_type then
+    return 0
+  else
+    return #handlers_for_type
+  end
+end
+
 -- Emit a named event to all listeners with optional data argument(s).
 function Emitter:emit(name, ...)
   local handlers = rawget(self, "handlers")
@@ -236,6 +259,36 @@ function Emitter:removeListener(name, callback)
     if handlers_for_type[i] == callback or callback == nil then
       handlers_for_type[i] = nil
     end
+  end
+end
+
+-- Remove all listeners
+--  @param {String?} name optional event name
+function Emitter:removeAllListeners(name)
+  local handlers = rawget(self, "handlers")
+  if not handlers then return end
+  local handlers_for_type = rawget(handlers, name)
+  if handlers_for_type then
+    for i = #handlers_for_type, 1, -1 do
+        handlers_for_type[i] = nil
+    end
+  else
+    rawset(self, "handlers", {})
+  end
+end
+
+-- Get listeners
+--  @param {String} name event name
+function Emitter:listeners(name)
+  local handlers = rawget(self, "handlers")
+  if not handlers then
+    return 0
+  end
+  local handlers_for_type = rawget(handlers, name)
+  if not handlers_for_type then
+    return {}
+  else
+    return handlers_for_type
   end
 end
 
@@ -290,6 +343,10 @@ function iStream:pipe(target)
     end
 
     didOnEnd = true
+
+    if target._closeStream then
+      target:_closeStream()
+    end
 
     if target.done then
       target:done()

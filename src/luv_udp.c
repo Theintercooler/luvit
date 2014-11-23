@@ -56,12 +56,14 @@ static void luv_on_udp_recv(uv_udp_t* handle,
   lua_State *L = luv_handle_get_lua(handle->data);
 
   if (nread == 0) {
+    free(buf->base);
     return;
   }
 
   if (nread < 0) {
     luv_push_async_error(L, nread, "on_recv", NULL);
     luv_emit_event(L, "error", 1);
+    free(buf->base);
     return;
   }
 

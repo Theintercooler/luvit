@@ -61,7 +61,7 @@ end
 
 function Socket:address()
   if self._handle then
-    return self._handle:getsockname()
+    return self._handle:getpeername()
   end
   return nil
 end
@@ -125,12 +125,24 @@ function Socket:shutdown(callback)
   self._handle:shutdown(callback)
 end
 
+function Socket:nodelay(enable)
+  self._handle:nodelay(enable)
+end
+
+function Socket:keepalive(enable, delay)
+  self._handle:keepalive(enable, delay)
+end
+
 function Socket:pause()
   self._handle:readStop()
 end
 
 function Socket:resume()
   self._handle:readStart()
+end
+
+function Socket:isConnected()
+  return self._connected
 end
 
 function Socket:_initEmitters()
@@ -143,6 +155,7 @@ function Socket:_initEmitters()
   end)
 
   self._handle:on('connect', function()
+    self._connected = true
     self:emit('connect')
   end)
 
@@ -158,11 +171,7 @@ function Socket:_initEmitters()
   end)
 
   self._handle:on('error', function(err)
-    -- destroy on ECONNREFUSED
-    if (err.code == 'ECONNREFUSED') then
-      self:destroy()
-    end
-    self:emit('error', err)
+    self:destroy(err)
   end)
 end
 
@@ -264,6 +273,7 @@ function Socket:initialize(handle)
   self._onTimeout = utils.bind(Socket._onTimeoutReal, self)
   self._handle = handle or Tcp:new()
   self._pendingWriteRequests = 0
+  self._connected = false
   self._connecting = false
   self._connectQueueSize = 0
   self.bytesWritten = 0

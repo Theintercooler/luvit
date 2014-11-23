@@ -88,10 +88,24 @@ end
 
 utils.DUMP_MAX_DEPTH = 1
 
-function utils.dump(o, depth, no_colorize)
+function utils.dump(o, depth, no_colorize, seen_tables)
   local colorize_func
   local _escapes
 
+  if not seen_tables then
+    seen_tables = {}
+  end
+
+  local function seenTable(tbl)
+    return seen_tables[tostring(tbl)]
+  end
+
+  local function addTable(tbl)
+    if tostring(tbl) == nil then
+      return
+    end
+    seen_tables[tostring(tbl)] = true
+  end
   if no_colorize then
     _escapes = escapes
     colorize_func = colorize_nop
@@ -126,6 +140,11 @@ function utils.dump(o, depth, no_colorize)
     return colorize_func("Bmagenta", tostring(o))
   end
   if t == 'table' then
+    if seenTable(o) then
+      return ''
+    end
+
+    addTable(o)
     if type(depth) == 'nil' then
       depth = 0
     end
@@ -156,16 +175,25 @@ function utils.dump(o, depth, no_colorize)
         if type(k) == "string" and k:find("^[%a_][%a%d_]*$") then
           s = k .. ' = '
         else
-          s = '[' .. utils.dump(k, 100, no_colorize) .. '] = '
+          s = '[' .. utils.dump(k, 100, no_colorize, seen_tables) .. '] = '
         end
       end
-      s = s .. utils.dump(v, depth + 1, no_colorize)
-      lines[i] = s
-      estimated = estimated + #s
+      local tmpStr = utils.dump(v, depth + 1, no_colorize, seen_tables)
+      if #tmpStr > 0 then
+        lines[i] = table.concat({s, tmpStr})
+        estimated = estimated + #lines[i]
       i = i + 1
+      end
     end
     if estimated > 200 then
-      return "{\n  " .. indent .. table.concat(lines, ",\n  " .. indent) .. "\n" .. indent .. "}"
+      local s = "{\n  " .. indent
+      for k = 1, i do
+        if lines[k] then
+          s = s .. lines[k] .. ",\n  " .. indent
+        end
+      end
+      s = s .. "\n" .. indent .. "}"
+      return s
     else
       return "{ " .. table.concat(lines, ", ") .. " }"
     end

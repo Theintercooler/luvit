@@ -16,6 +16,7 @@ limitations under the License.
 
 --]]
 
+local Error = require('luvit.core').Error
 local native = require('uv_native')
 local table = require('table')
 local pathlib = require('luvit.path')
@@ -250,6 +251,7 @@ function ReadStream:initialize(path, options)
 
   self.options = options
   self.offset = options.offset
+  self.last = options.length and self.offset + options.length
 
   if (options.fd ~= nil) then
     self.fd = options.fd
@@ -274,9 +276,14 @@ end
 function ReadStream:_read()
   local options = self.options
 
-  local last = options.length and self.offset + options.length
   local chunk_size = options.chunk_size
-  local to_read = (last and chunk_size + self.offset > last and last - self.offset) or chunk_size
+  local to_read = chunk_size
+  if self.last ~= nil then
+    -- indicating length was set in option; need to check boundary
+    if chunk_size + self.offset > self.last then
+      to_read = self.last - self.offset
+    end
+  end
 
   self.reading = true
 
@@ -381,24 +388,34 @@ fs.SyncWriteStream = SyncWriteStream
 function SyncWriteStream:initialize(fd)
   self.fd = fd
   self.offset = 0
+  self.closed = false
 end
 
-function SyncWriteStream:write(chunk, callback)
+function SyncWriteStream:write(chunk)
+  if self.closed then
+    self:emit('error', Error:new('write after end'))
+    return
+  end
   local len = fs.writeSync(self.fd, self.offset, chunk)
   self.offset = self.offset + len
   return len
 end
 
-function SyncWriteStream:finish(chunk, callback)
-  if (chunk ~= nil) then
+function SyncWriteStream:finish(chunk)
+  if chunk then
     self:write(chunk)
   end
+  self:_closeStream()
   self:emit("end")
-  self:close()
 end
 
-function SyncWriteStream:close(chunk, callback)
+function SyncWriteStream:_closeStream()
+  if self.closed then
+    return
+  end
   fs.closeSync(self.fd)
+  self.closed = true
+  self:emit("closed")
 end
 
 -- TODO: Create non-sync writestream

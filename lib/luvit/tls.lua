@@ -854,15 +854,20 @@ local function connect(...)
   end
 
   local socket = options.socket or Socket:new()
-  local sslcontext
+  if callback then
+    socket:once('error', callback)
+  end
 
+  local sslcontext
   if options.context then
     sslcontext = createCredentials(options, options.context)
   else
     sslcontext = createCredentials(options)
   end
 
-  socket:connect(options.port, options.host)
+  if not socket:isConnected() then
+    socket:connect(options.port, options.host)
+  end
 
   local servername = options.servername or options.host
   if not servername then

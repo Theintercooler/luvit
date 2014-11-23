@@ -213,6 +213,8 @@ uv_fs_t* luv_fs_store_callback(lua_State* L, int index) {
       int err = uv_fs_##func(luv_get_loop(L), req, __VA_ARGS__, luv_after_fs);\
       if (err < 0) {                                                              \
         luv_push_async_error(L, err, #func, path);                            \
+        uv_fs_req_cleanup(req);                                                   \
+        free(req->data);                                                      \
         return lua_error(L);                                                  \
       }                                                                       \
       return 0;                                                               \
@@ -220,10 +222,14 @@ uv_fs_t* luv_fs_store_callback(lua_State* L, int index) {
     err = uv_fs_##func(luv_get_loop(L), req, __VA_ARGS__, NULL);              \
     if (err < 0) {                                                           \
       luv_push_async_error(L, err, #func, path);                              \
+      uv_fs_req_cleanup(req);                                                 \
+      free(req->data);                                                        \
       return lua_error(L);                                                    \
     }                                                                         \
     argc = luv_process_fs_result(L, req);                                     \
     lua_remove(L, -argc - 1);                                                 \
+    uv_fs_req_cleanup(req);                                                   \
+    free(req->data);                                                          \
     return argc;                                                              \
   } while (0)
 

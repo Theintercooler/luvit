@@ -18,6 +18,7 @@ limitations under the License.
 
 -- Bootstrap require system
 local native = require('uv_native')
+
 local Emitter = require('luvit.core').Emitter
 
 local Process = Emitter:extend()
@@ -25,9 +26,6 @@ local process = Process:new()
 process.execPath = native.execpath()
 process.cwd = getcwd
 process.argv = argv
-
-_G.getcwd = nil
-_G.argv = nil
 
 package.preload["luvit.process"] = function ()
     return process
@@ -39,6 +37,9 @@ local env = require('env')
 local constants = require('constants')
 local uv = require('luvit.uv')
 local utils = require('luvit.utils')
+
+_G.getcwd = nil
+_G.argv = nil
 
 setmetatable(process, {
   __index = function (table, key)
@@ -198,13 +199,12 @@ _G.table = nil
 _G.printSync = _G.printSync or print
 _G.print = utils.print
 _G.p = utils.prettyPrint
-_G.debug = utils.debug
 
 -- Move the version variables into a table
 process.version = VERSION
 process.versions = {
   luvit = VERSION,
-  uv = native.VERSION,
+  uv = native.VERSION_MAJOR .. "." .. native.VERSION_MINOR .. "-" .. UV_VERSION,
   luajit = LUAJIT_VERSION,
   yajl = YAJL_VERSION,
   zlib = ZLIB_VERSION,
@@ -283,7 +283,6 @@ function eventSource(name, fn, ...)
      p("ERROR: missing function to eventSource", name, fn, ...)
      return
   end
-    
   local args = {...}
   return assert(xpcall(function ()
     return fn(unpack(args))
@@ -292,10 +291,13 @@ end
 
 errorMeta = {__tostring=function(table) return table.message end}
 
+
 local realAssert = assert
 function assert(good, error)
   return realAssert(good, tostring(error))
 end
+
+
 
 setmetatable(_G, {
   __index = function(self, key)
