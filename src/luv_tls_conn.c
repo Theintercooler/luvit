@@ -422,8 +422,8 @@ static int
 tls_conn_get_error(lua_State *L) {
   tls_conn_t *tc = getCONN(L, 1);
   if (tc->error) {
-    lua_pushstring(L, tc->error_buf);
     lua_pushnumber(L, tc->error);
+    lua_pushstring(L, tc->error_buf);
     return 2;
   }
   else {
