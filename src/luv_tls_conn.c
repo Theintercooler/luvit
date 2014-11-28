@@ -224,14 +224,14 @@ tls_handle_ssl_error_x(tls_conn_t *tc, SSL *ssl, int rv, const char *func) {
   }
   else {
     BUF_MEM* mem;
-    BIO *bio;
+    BIO* bio;
 
     assert(err == SSL_ERROR_SSL || err == SSL_ERROR_SYSCALL);
     tc->error = rv;
     if ((bio = BIO_new(BIO_s_mem()))) {
       ERR_print_errors(bio);
       BIO_get_mem_ptr(bio, &mem);
-      strncpy(tc->error_buf, mem->data, sizeof(tc->error_buf));
+      strncpy(tc->error_buf, mem->data, sizeof(tc->error_buf) > mem->length ? mem->length : sizeof(tc->error_buf));
       DBG("[%p] SSL: error %s\n", ssl, mem->data);
       BIO_free(bio);
     }
