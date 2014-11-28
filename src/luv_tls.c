@@ -594,7 +594,7 @@ luaopen_tls(lua_State *L)
 
   luvit__lua_tls_conn_init(L);
 
-  luaL_openlib(L, "_tls", tls_lib, 1);
+  luaL_openlib(L, NULL, tls_lib, 1);
 
 #ifdef SSL_OP_ALL
   LUVIT_DEFINE_CONSTANT(L, SSL_OP_ALL);

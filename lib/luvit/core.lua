@@ -17,7 +17,7 @@ limitations under the License.
 --]]
 
 local table = require('table')
-local process -- Loaded on demand as this file is loaded during init
+local process, debug -- Loaded on demand as this file is loaded during init
 
 --[[
 This module is for various classes and utilities that don't need their own
@@ -172,15 +172,16 @@ function Emitter:missingHandlerType(name, ...)
       local handlers = rawget(process, "handlers")
       if handlers and handlers["error"] then
         -- delegate to process error handler
-        process:emit("error", ..., self)
-      else
-        debug("UNHANDLED ERROR", ...)
-        error("UNHANDLED ERROR. Define process:on('error', handler) to catch such errors")
+        return process:emit("error", ..., self)
       end
-    else
-      debug("UNHANDLED ERROR", ...)
-      error("UNHANDLED ERROR. Define process:on('error', handler) to catch such errors")
     end
+
+    if debug == nil then
+        debug = require "luvit.utils".debug
+    end
+
+    debug("UNHANDLED ERROR", ...)
+    error("UNHANDLED ERROR. Define process:on('error', handler) to catch such errors")
   end
 end
 

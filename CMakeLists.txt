@@ -5,6 +5,10 @@ if(NOT DEFINED ZLIB_LIBRARIES)
     find_package(ZLIB REQUIRED)
 endif()
 
+find_package(OpenSSL)
+
+set(HAVE_OPENSSL ${OPENSSL_FOUND})
+
 set(HAVE_HTTP_PARSER DEFINED HTTP_PARSER_INCLUDE_DIRS)
 set(HAVE_YAJL DEFINED YAJL_INCLUDE_DIRS)
 set(HAVE_ODBXUV_LUA DEFINED ODBXUVLUA_INCLUDE_DIRS)
@@ -84,27 +88,34 @@ set(LUVIT_SOURCES
     ${CMAKE_CURRENT_SOURCE_DIR}/src/luv_signal.c
     ${CMAKE_CURRENT_SOURCE_DIR}/src/luv_tcp.c
     ${CMAKE_CURRENT_SOURCE_DIR}/src/luv_timer.c
-#   ${CMAKE_CURRENT_SOURCE_DIR}/src/luv_tls.c
-#   ${CMAKE_CURRENT_SOURCE_DIR}/src/luv_tls_conn.c
     ${CMAKE_CURRENT_SOURCE_DIR}/src/luv_tty.c
     ${CMAKE_CURRENT_SOURCE_DIR}/src/luv_udp.c
     ${CMAKE_CURRENT_SOURCE_DIR}/src/luv_zlib.c
     ${CMAKE_CURRENT_SOURCE_DIR}/src/utils.c)
 
+if(${HAVE_OPENSSL})
+    message(STATUS "luvit: detected openssl")
+    add_definitions(-DHAVE_OPENSSL -DUSE_OPENSSL=1 -DUSE_SYSTEM_SSL=1 -DLUVIT_TARGET_OPENSSL_VERSION_NUMBER="${OPENSSL_VERSION}")
+    set(LUVIT_SOURCES
+        ${LUVIT_SOURCES}
+        ${CMAKE_CURRENT_SOURCE_DIR}/src/luv_tls.c
+        ${CMAKE_CURRENT_SOURCE_DIR}/src/luv_tls_conn.c)
+endif()
+
 if(${HAVE_HTTP_PARSER})
-    message("-- luvit: detected http-parser")
+    message(STATUS "luvit: detected http-parser")
     add_definitions(-DHAVE_HTTP_PARSER)
     set(LUVIT_SOURCES ${LUVIT_SOURCES} ${CMAKE_CURRENT_SOURCE_DIR}/src/lhttp_parser.c)
 endif()
 
 if(${HAVE_YAJL})
-    message("-- luvit: detected YAJL")
+    message(STATUS "luvit: detected YAJL")
     add_definitions(-DHAVE_YAJL)
     set(LUVIT_SOURCES ${LUVIT_SOURCES} ${CMAKE_CURRENT_SOURCE_DIR}/src/lyajl.c)
 endif()
 
 if(${HAVE_ODBXUV_LUA})
-    message("-- luvit: detected ODBX-uv-lua")
+    message(STATUS "luvit: detected ODBX-uv-lua")
     add_definitions(-DHAVE_ODBXUV_LUA)
 endif()
     
@@ -118,6 +129,7 @@ target_link_libraries(${LUVIT_LIBRARY}
     ${HTTP_PARSER_LIBRARIES}
     ${YAJL_LIBRARIES}
     ${ODBXUVLUA_LIBRARIES}
+    ${OPENSSL_LIBRARIES}
 )
 
 set(LUVIT_LIBRARIES

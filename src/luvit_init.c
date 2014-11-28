@@ -31,8 +31,10 @@
 #include "luv.h"
 #include "luv_dns.h"
 #include "luv_debug.h"
-#ifdef USE_OPENSSL
+#ifdef HAVE_OPENSSL
 #include "luv_tls.h"
+#endif
+#ifdef HAVE_LCRYPTO
 #include "lcrypto.h"
 #endif
 #include "luv_zlib.h"
@@ -59,7 +61,7 @@ static int luvit_print_stderr(lua_State* L) {
 }
 
 
-#ifdef USE_OPENSSL
+#ifdef HAVE_OPENSSL
 
 static uv_rwlock_t* locks;
 
@@ -122,7 +124,7 @@ static int luvit_getcwd(lua_State* L) {
   return 1;
 }
 
-#ifdef USE_OPENSSL
+#ifdef HAVE_OPENSSL
 int luvit_init_ssl()
 {
 #if !defined(OPENSSL_NO_COMP)
@@ -191,10 +193,15 @@ int luvit_init(lua_State *L, uv_loop_t* loop)
   lua_getfield(L, -1, "preload");
   lua_remove(L, -2);
 
-#ifdef USE_OPENSSL
+#ifdef HAVE_OPENSSL
+  luvit_init_ssl();
+
   /* Register tls */
   lua_pushcfunction(L, luaopen_tls);
   lua_setfield(L, -2, "_tls");
+#endif
+
+#ifdef HAVE_LCRYPTO
   /* Register tls */
   lua_pushcfunction(L, luaopen_crypto);
   lua_setfield(L, -2, "_crypto");
@@ -294,7 +301,7 @@ int luvit_init(lua_State *L, uv_loop_t* loop)
   lua_setglobal(L, "ZLIB_VERSION");
 #endif
 
-#ifdef USE_OPENSSL
+#ifdef HAVE_OPENSSL
   lua_pushstring(L, OPENSSL_VERSION_TEXT);
   lua_setglobal(L, "OPENSSL_VERSION");
 #endif
