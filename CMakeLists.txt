@@ -93,6 +93,8 @@ set(LUVIT_SOURCES
     ${CMAKE_CURRENT_SOURCE_DIR}/src/luv_zlib.c
     ${CMAKE_CURRENT_SOURCE_DIR}/src/utils.c)
 
+set(DETECTED_DEPS "")
+
 if(${HAVE_OPENSSL})
     message(STATUS "luvit: detected openssl")
     add_definitions(-DHAVE_OPENSSL -DUSE_OPENSSL=1 -DUSE_SYSTEM_SSL=1 -DLUVIT_TARGET_OPENSSL_VERSION_NUMBER="${OPENSSL_VERSION}")
@@ -100,23 +102,35 @@ if(${HAVE_OPENSSL})
         ${LUVIT_SOURCES}
         ${CMAKE_CURRENT_SOURCE_DIR}/src/luv_tls.c
         ${CMAKE_CURRENT_SOURCE_DIR}/src/luv_tls_conn.c)
+    set(DETECTED_DEPS
+        ${DETECTED_DEPS}
+        ${OPENSSL_LIBRARIES})
 endif()
 
 if(${HAVE_HTTP_PARSER})
     message(STATUS "luvit: detected http-parser")
     add_definitions(-DHAVE_HTTP_PARSER)
     set(LUVIT_SOURCES ${LUVIT_SOURCES} ${CMAKE_CURRENT_SOURCE_DIR}/src/lhttp_parser.c)
+    set(DETECTED_DEPS
+        ${DETECTED_DEPS}
+        ${HTTP_PARSER_LIBRARIES})
 endif()
 
 if(${HAVE_YAJL})
     message(STATUS "luvit: detected YAJL")
     add_definitions(-DHAVE_YAJL)
     set(LUVIT_SOURCES ${LUVIT_SOURCES} ${CMAKE_CURRENT_SOURCE_DIR}/src/lyajl.c)
+    set(DETECTED_DEPS
+        ${DETECTED_DEPS}
+        ${YAJL_LIBRARIES})
 endif()
 
 if(${HAVE_ODBXUV_LUA})
     message(STATUS "luvit: detected ODBX-uv-lua")
     add_definitions(-DHAVE_ODBXUV_LUA)
+    set(DETECTED_DEPS
+        ${DETECTED_DEPS}
+        ${ODBXUVLUA_LIBRARIES})
 endif()
     
 
@@ -126,11 +140,7 @@ add_library(${LUVIT_LIBRARY} STATIC ${LUVIT_SOURCES})
 target_link_libraries(${LUVIT_LIBRARY}
     ${UV_LIBRARIES}
     ${ZLIB_LIBRARIES}
-    ${HTTP_PARSER_LIBRARIES}
-    ${YAJL_LIBRARIES}
-    ${ODBXUVLUA_LIBRARIES}
-    ${OPENSSL_LIBRARIES}
-)
+    ${DETECTED_DEPS})
 
 set(LUVIT_LIBRARIES
 	${LUVIT_LIBRARY}
