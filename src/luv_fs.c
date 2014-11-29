@@ -146,20 +146,53 @@ int luv_process_fs_result(lua_State* L, uv_fs_t* req) {
         free(ref->buf);
         break;
 
-      case UV_FS_READDIR:
+      case UV_FS_SCANDIR:
         {
-          int i;
-          char* namebuf = (char*)req->ptr;
-          int nnames = req->result;
+          uv_dirent_t ent;
+          int err = uv_fs_scandir_next(req, &ent);
 
           argc = 1;
-          lua_createtable(L, nnames, 0);
-          for (i = 0; i < nnames; i++) {
-            lua_pushstring(L, namebuf);
-            lua_rawseti(L, -2, i + 1);
-            namebuf += strlen(namebuf);
-            assert(*namebuf == '\0');
-            namebuf += 1;
+          lua_createtable(L, 0, 0);
+          int i = 0;
+          while(err != UV_EOF) {
+            lua_createtable(L, 2, 0);
+            lua_pushstring(L, "name");
+            lua_pushstring(L, ent.name);
+            lua_settable(L, -3);
+
+            lua_pushstring(L, "type");
+            switch(ent.type) {
+              case UV_DIRENT_FILE:
+                  lua_pushstring(L, "FILE");
+                  break;
+              case UV_DIRENT_DIR:
+                  lua_pushstring(L, "DIR");
+                  break;
+              case UV_DIRENT_LINK:
+                  lua_pushstring(L, "LINK");
+                  break;
+              case UV_DIRENT_FIFO:
+                  lua_pushstring(L, "FIFO");
+                  break;
+              case UV_DIRENT_SOCKET:
+                  lua_pushstring(L, "SOCKET");
+                  break;
+              case UV_DIRENT_CHAR:
+                  lua_pushstring(L, "CHAR");
+                  break;
+              case UV_DIRENT_BLOCK:
+                  lua_pushstring(L, "BLOCK");
+                  break;
+              default:
+              case UV_DIRENT_UNKNOWN:
+                  lua_pushstring(L, "UNKOWN");
+                  break;
+            }
+            lua_settable(L, -3);
+
+            lua_rawseti(L, -2, ++i);
+
+            err = uv_fs_scandir_next(req, &ent);
           }
         }
         break;
@@ -308,8 +341,9 @@ int luv_fs_rmdir(lua_State* L) {
 
 int luv_fs_readdir(lua_State* L) {
   const char* path = luaL_checkstring(L, 1);
-  uv_fs_t* req = luv_fs_store_callback(L, 2);
-  FS_CALL(readdir, 2, path, path, 0);
+  int flags = luaL_checkint(L, 2);
+  uv_fs_t* req = luv_fs_store_callback(L, 3);
+  FS_CALL(scandir, 2, path, path, flags);
 }
 
 
