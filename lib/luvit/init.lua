@@ -273,6 +273,9 @@ OS_BINDING.date = OLD_OS.date
 OS_BINDING.time = OLD_OS.time
 OS_BINDING.clock = OLD_OS.clock
 OS_BINDING.execute = OLD_OS.execute
+OS_BINDING.tmpname = OLD_OS.tmpname
+OS_BINDING.setlocale = OLD_OS.setlocale
+OS_BINDING.difftime = OLD_OS.difftime
 
 local traceback = require('debug').traceback
 
