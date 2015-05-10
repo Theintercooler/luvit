@@ -25,6 +25,7 @@ local timer = require('luvit.timer')
 local table = require('table')
 local net = require('luvit.net')
 local bind = require('luvit.utils').bind
+local process = require('luvit.process')
 
 local Error = require('luvit.core').Error
 
